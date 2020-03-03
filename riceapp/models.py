@@ -31,7 +31,7 @@ class People(models.Model):
 
 
 class Field(models.Model):
-    '''Model class for Collection Fields '''
+    ''' Model class for Collection Fields '''
 
     name = models.CharField(max_length=200)
     type = models.CharField(max_length=100)
@@ -59,30 +59,60 @@ class Isolate(models.Model):
         return self.isolate_id
 
 
+
+    
 class RiceGenotype(models.Model):
+    CATEGORY_CHOICES = [
+        ('released_variety','Released Variety'),
+        ('microgenic_line','Microgenic Line'),
+        ('interspecific_variety','Interspecific Variety'),
+        ('introgession_line', 'Introgession Line'),
+        ('adapted_african_cultiva', 'Adapted African Cultiva')
+    ]
     name = models.CharField(max_length=200)
     rice_genotype_id = models.CharField(max_length=100, unique=True) 
     resistance_genes = models.CharField(max_length=200)
     r_gene_sources = models.CharField(max_length=200)
     susceptible_background = models.CharField(max_length=200)
+    accession_number = models.CharField(max_length=100)
+    pedigree = models.CharField(max_length=100)
+    category = models.CharField(max_length=50,choices=CATEGORY_CHOICES)
 
     def __str__(self):
         return self.name
 
+class RiceGene(models.Model):
+    name = models.CharField(max_length=100)
+    chromosome_id = models.IntegerField()
+    marker = models.CharField(max_length=100)
+    rice_genotype = models.ForeignKey(RiceGenotype, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
+
+class RiceGeneScreenResult(models.Model):
+    rice_gene = models.ForeignKey(RiceGene, on_delete=models.CASCADE)
+    pcr_results = models.BooleanField() #POSITIVE OR NEGATIVE
+    replicate_id = models.CharField(max_length=20) #1,2,3
+    sample_id = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.sample_id
+
 
 class PathotypingResults(models.Model):
-    replicate_id = models.CharField(max_length=100,unique=True)
-    sample_id = models.CharField(max_length=100, unique=True)
+    replicate_id = models.CharField(max_length=100)
+    sample_id = models.CharField(max_length=100)
     rice_genotype = models.ForeignKey(RiceGenotype, on_delete=models.CASCADE)
     isolate = models.ForeignKey(Isolate, on_delete=models.CASCADE)
-    stock_id = models.CharField(max_length=100, unique=True)
+    stock_id = models.CharField(max_length=100)
     date_inoculated = models.DateField()
     date_scored = models.DateField()
     date_planted = models.DateField()
     person = models.ForeignKey(People,on_delete=models.CASCADE)
     lab = models.ForeignKey(RiceBlastLab, on_delete=models.CASCADE)
     disease_score = models.IntegerField()
-    test_id = models.CharField(unique=True,max_length=100)
+    test_id = models.CharField(max_length=100)
 
     def __str__(self):
         return self.sample_id
@@ -96,29 +126,46 @@ class VcgGroup(models.Model):
     def __str__(self):
         return self.group 
 
-class DNASequence(models.Model):
+class FungalSmallDnaFragmentsSequence(models.Model):
     isolate = models.ForeignKey(Isolate, on_delete=models.CASCADE)
     taxa_name = models.CharField(max_length=200)
-    sequence_id = models.CharField(max_length=100,unique=True)
+    sequence_id = models.CharField(max_length=100) #unique or not?
     description = models.TextField()
-    sequence_data = models.CharField(max_length=200)
-    chromosome_id = models.CharField(max_length=100,unique=True)
-    chromosome_site_id = models.CharField(max_length=100,unique=True)
-    loci_id = models.CharField(max_length=100,unique=True)
+    sequence_data = models.CharField(max_length=200) #UPLOAD A FASTA FILE
+    chromosome_id = models.IntegerField()
+    chromosome_site_id = models.CharField(max_length=100)
+    loci_id = models.CharField(max_length=100)
     person = models.ForeignKey(People, on_delete=models.CASCADE)
     lab = models.ForeignKey(RiceBlastLab, on_delete=models.CASCADE)
+    target_gene = models.CharField(max_length=255)
 
     def __str__(self):
         return self.sequence_id 
 
-class VCGTest(models.Model):
+class RiceSmallDnaFragmentsSequence(models.Model):
+    rice_genotype = models.ForeignKey(RiceGenotype, on_delete=models.CASCADE)
+    taxa_name = models.CharField(max_length=200)
+    sequence_id = models.CharField(max_length=100) #unique or not?
+    description = models.TextField()
+    sequence_data = models.CharField(max_length=200) #UPLOAD A FASTA FILE
+    chromosome_id = models.IntegerField()
+    chromosome_site_id = models.CharField(max_length=100)
+    loci_id = models.CharField(max_length=100)
+    person = models.ForeignKey(People, on_delete=models.CASCADE)
+    lab = models.ForeignKey(RiceBlastLab, on_delete=models.CASCADE)
+    target_gene = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.sequence_id 
+
+class VCGTestResults(models.Model):
     vcg_test_id = models.CharField(max_length=100, unique=True)
     isolate = models.ForeignKey(Isolate,on_delete=models.CASCADE)
-    vcg_tester_id = models.CharField(max_length=100, unique=True)
+    vcg_tester_id = models.CharField(max_length=100)
     tester_complimented_isolate = models.BooleanField()
-    # tester + control
+    tester_and_control = models.BooleanField()
     lab = models.ForeignKey(RiceBlastLab, on_delete=models.CASCADE)
-    vcg_replicate_id = models.CharField(max_length=100,unique=True)
+    vcg_replicate_id = models.CharField(max_length=100)
     vcg = models.ForeignKey(VcgGroup, on_delete=models.CASCADE)
     
     def __str__(self):
@@ -127,11 +174,11 @@ class VCGTest(models.Model):
 class Protocol(models.Model):
     name = models.CharField(max_length=200)
     protocol_id = models.CharField(max_length=100, unique=True)
-    key_reference = models.CharField(max_length=200)
-    protocol = models.CharField(max_length=200)
+    key_reference = models.CharField(max_length=500)
+    protocol = models.CharField(max_length=200) #UPLOAD FILE
     person = models.ForeignKey(People, on_delete=models.CASCADE)
     lab = models.ForeignKey(RiceBlastLab, on_delete=models.CASCADE)
-    protocol_modified = models.BooleanField()
+    protocol_modified = models.DateField()
     related_protocols = models.CharField(max_length=200)
     country = CountryField(multiple=True)
 
@@ -143,9 +190,16 @@ class RiceGBS(models.Model):
     rice_gbs_name = models.CharField(max_length=200)
     person = models.ForeignKey(People,on_delete=models.CASCADE)
     lab = models.ForeignKey(RiceBlastLab, on_delete=models.CASCADE)
-    gbs_list = models.CharField(max_length=200)
-    gbs_dataset = models.CharField(max_length=200)
+    gbs_dataset = models.CharField(max_length=200) #UPLOAD VCF/HAPMAP FILE
 
     def __str__(self):
         return self.rice_gbs_name
 
+class FungalGBS(models.Model):
+    fungal_gbs_name = models.CharField(max_length=200)
+    person = models.ForeignKey(People,on_delete=models.CASCADE)
+    lab = models.ForeignKey(RiceBlastLab, on_delete=models.CASCADE)
+    gbs_dataset = models.CharField(max_length=200) #UPLOAD VCF/HAPMAP FILE
+
+    def __str__(self):
+        return self.fungal_gbs_name

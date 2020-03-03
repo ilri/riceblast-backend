@@ -14,10 +14,17 @@ admin.site.register(Isolate)
 admin.site.register(RiceGenotype)
 admin.site.register(PathotypingResults)
 admin.site.register(VcgGroup)
-admin.site.register(DNASequence)
-admin.site.register(VCGTest)
+admin.site.register(FungalSmallDnaFragmentsSequence)
+admin.site.register(VCGTestResults)
 admin.site.register(Protocol)
 admin.site.register(RiceGBS)
+
+admin.site.register(RiceGene)
+admin.site.register(RiceGeneScreenResult)
+admin.site.register(RiceSmallDnaFragmentsSequence)
+admin.site.register(FungalGBS)
+
+
 
 
 
