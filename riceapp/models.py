@@ -43,26 +43,27 @@ class FungalCollectionSite(models.Model):
 
     name = models.CharField(max_length=200)
     type = models.CharField(max_length=100)
-    person = models.ForeignKey(People, on_delete=models.CASCADE, related_name='field_person')
-    country = CountryField()
     latitude = models.DecimalField(default=0.0000,max_digits=6, decimal_places=4)
     longitude = models.DecimalField(default=0.0000,max_digits=6, decimal_places=4)
+    country = CountryField()
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    person = models.ForeignKey(People, on_delete=models.CASCADE, related_name='field_person')
+
     
     def __str__(self):
         return self.name
 
 class Isolate(models.Model):
-    '''Model class for lab isolates'''
+    '''Model class for lab isolates '''
     isolate_id = models.CharField(max_length=100, unique=True)
     name = models.CharField(max_length=200)
-    taxa_name = models.CharField(max_length=200)
-    date_collected = models.DateField() #!!!
-    date_isolated = models.DateField() #!!!!
+    taxa_name = models.CharField(max_length=200,blank=True)
+    tissue_type = models.CharField(max_length=100,null=True)
+    date_collected = models.DateField(null=True,blank=True)
+    date_isolated = models.DateField(null=True,blank=True)
     country = CountryField()
-    collection_site = models.ForeignKey(FungalCollectionSite,on_delete=models.CASCADE)
-    person = models.ForeignKey(People, on_delete=models.CASCADE)
-    tissue_type = models.CharField(max_length=100)
+    collection_site = models.ForeignKey(FungalCollectionSite,on_delete=models.CASCADE,blank=True,null=True)
+    person = models.ForeignKey(People, on_delete=models.CASCADE,blank=True,null=True)
 
     def __str__(self):
         return self.isolate_id
@@ -78,24 +79,29 @@ class RiceGenotype(models.Model):
         ('introgession_line', 'Introgession Line'),
         ('adapted_african_cultiva', 'Adapted African Cultiva')
     ]
-    name = models.CharField(max_length=200)
-    rice_genotype_id = models.CharField(max_length=100, unique=True) 
-    resistance_genes = models.CharField(max_length=200)
-    r_gene_sources = models.CharField(max_length=200)
-    susceptible_background = models.CharField(max_length=200)
-    accession_number = models.CharField(max_length=100)
-    pedigree = models.CharField(max_length=100)
-    category = models.CharField(max_length=50,choices=CATEGORY_CHOICES)
+    name = models.CharField(max_length=255)
+    rice_genotype_id = models.CharField(max_length=100,blank=True, null=True) #NOT UNIQUE 
+    resistance_genes = models.CharField(max_length=200,blank=True, null=True)
+    r_gene_sources = models.CharField(max_length=200,blank=True, null=True)
+    susceptible_background = models.CharField(max_length=200,blank=True, null=True)
+    accession_number = models.CharField(max_length=100,blank=True, null=True)
+    pedigree = models.CharField(max_length=100,blank=True, null=True)
+    category = models.CharField(max_length=50,choices=CATEGORY_CHOICES,blank=True, null=True)
 
     def __str__(self):
         return self.name
 
 class RiceGene(models.Model):
+    RESISTANCE_CHOICES = [
+        ('complete','Complete'),
+        ('partial','Partial'),
+    ]
     name = models.CharField(max_length=100)
     chromosome_id = models.IntegerField()
     marker = models.CharField(max_length=100)
     donor_line = models.ForeignKey(RiceGenotype, on_delete=models.CASCADE, blank=True, null=True)
-
+    resistance_type = models.CharField(choices=RESISTANCE_CHOICES, max_length=50)
+    reference = models.CharField(max_length=200)
     def __str__(self):
         return self.name
 
@@ -121,19 +127,19 @@ class FungalGeneScreenResult(models.Model):
 
 
 class PathotypingResults(models.Model):
-    replicate_id = models.CharField(max_length=100)
+    replicate_id = models.CharField(max_length=100,blank=True)
     sample_id = models.CharField(max_length=100, unique=True)
-    rice_genotype = models.ForeignKey(RiceGenotype, on_delete=models.CASCADE)
-    isolate = models.ForeignKey(Isolate, on_delete=models.CASCADE)
     stock_id = models.CharField(max_length=100)
-    date_inoculated = models.DateField()
-    date_scored = models.DateField()
-    date_planted = models.DateField()
-    person = models.ForeignKey(People,on_delete=models.CASCADE)
-    lab = models.ForeignKey(RiceBlastLab, on_delete=models.CASCADE)
+    date_inoculated = models.DateField(null=True,blank=True)
+    date_scored = models.DateField(null=True,blank=True)
+    date_planted = models.DateField(null=True,blank=True)
     disease_score = models.IntegerField()
-    test_id = models.CharField(max_length=100)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    test_id = models.CharField(max_length=100,blank=True)
+    rice_genotype = models.ForeignKey(RiceGenotype, on_delete=models.CASCADE,null=True,blank=True)
+    isolate = models.ForeignKey(Isolate, on_delete=models.CASCADE,null=True,blank=True)
+    person = models.ForeignKey(People,on_delete=models.CASCADE,null=True,blank=True)
+    lab = models.ForeignKey(RiceBlastLab, on_delete=models.CASCADE,null=True,blank=True)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE,null=True,blank=True)
 
     def __str__(self):
         return self.sample_id

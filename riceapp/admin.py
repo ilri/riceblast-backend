@@ -1,43 +1,53 @@
 from django.contrib import admin
 from .models import *
 from import_export import resources, fields
-from import_export.admin import ImportExportModelAdmin,ImportMixin
-from import_export.forms import ImportForm, ConfirmImportForm
+from import_export.admin import ImportExportModelAdmin,ImportMixin,ImportExportMixin
 from import_export.widgets import ForeignKeyWidget
-from django import forms
+from .forms import *
+from .resources import * 
 
 
 # Register your models here.
-class RiceGeneImportForm(ImportForm):
-    donor_line = forms.ModelChoiceField(
-        queryset=RiceGenotype.objects.all(),
-        required=True
-    )
-class RiceGeneConfirmImportForm(ConfirmImportForm):
-    donor_line = forms.ModelChoiceField(
-        queryset=RiceGenotype.objects.all(),
-        required=True
-    )
-class RiceGeneResource(resources.ModelResource):
 
-    class Meta:
-        model = RiceGene
+class FungalCollectionSiteAdmin(ImportExportMixin, admin.ModelAdmin):
+    resource_class = FungalCollectionSiteResource
 
-    def __init__(self, *args, **kwargs):
-        self.request = kwargs.pop('request',None)
-        super(RiceGeneResource, self).__init__(*args, **kwargs)
+    def get_import_form(self):
+        return FungalCollectionSiteImportForm
+    def get_confirm_import_form(self):
+        return FungalCollectionSiteConfirmForm
+
+    def get_form_kwargs(self,form,*args, **kwargs):
+        # pass on `donor_line` to the kwargs for the custom confirm form
+        if isinstance(form, FungalCollectionSiteImportForm):
+            if form.is_valid():
+                country = form.cleaned_data['country']
+                person = form.cleaned_data['person']
+                project = form.cleaned_data['project']
+                
+                kwargs.update({
+                    'country':country,
+                    'person':person,
+                    'project':project,
+                })
+        return kwargs
+
+    def get_resource_kwargs(self,request,*args, **kwargs):
+        return {'request':request}    
+
+#>>>>>>>>>Isolate Admin<<<<<<<<<<<<<<<<
+class IsolateAdmin(ImportExportModelAdmin):
+    resource_class = IsolateResource
+
+    def get_import_form(self):
+        return IsolateImportForm
+    def get_confirm_import_form(self):
+        return IsolateConfirmForm
     
-    def before_import(self,dataset, using_transactions, dry_run, **kwargs):
-        for i,header in enumerate(dataset.headers):
-            dataset.headers[i] = header.lower()
-    
-    def before_import_row(self,row,**kwargs):
-        donor_line = self.request.POST.get('donor_line')
-        row['donor_line'] = donor_line 
 
-
-
-
+class RiceGenotypeAdmin(ImportExportModelAdmin):
+    resource_class = RiceGenotypeResource
+# >>>>>>>>Rice Gene Admin<<<<<<<<<<<<<<
 
 class RiceGeneAdmin(ImportMixin, admin.ModelAdmin):
     resource_class = RiceGeneResource
@@ -49,10 +59,7 @@ class RiceGeneAdmin(ImportMixin, admin.ModelAdmin):
     
     def get_form_kwargs(self,form,*args, **kwargs):
         # pass on `donor_line` to the kwargs for the custom confirm form
-        # print(isinstance(form, ImportForm))
-        # print(form)
         if isinstance(form, RiceGeneImportForm):
-            print(form.is_valid())
             if form.is_valid():
                 donor_line = form.cleaned_data['donor_line']
                 kwargs.update({'donor_line':donor_line})
@@ -66,9 +73,9 @@ admin.site.site_header = 'Rice Blast'
 
 admin.site.register(RiceBlastLab)
 admin.site.register(People)
-admin.site.register(FungalCollectionSite)
-admin.site.register(Isolate)
-admin.site.register(RiceGenotype)
+admin.site.register(FungalCollectionSite, FungalCollectionSiteAdmin)
+admin.site.register(Isolate, IsolateAdmin)
+admin.site.register(RiceGenotype, RiceGenotypeAdmin)
 admin.site.register(PathotypingResults)
 admin.site.register(VcgGroup)
 admin.site.register(FungalSmallDnaFragmentsSequence)
