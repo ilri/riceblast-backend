@@ -29,25 +29,25 @@ class FungalCollectionSiteConfirmForm(ConfirmImportForm):
     )
 
 class IsolateImportForm(ImportForm):
-    country = forms.ChoiceField(choices=COUNTRIES.items())
-    collection_site = forms.ModelChoiceField(
-        queryset=FungalCollectionSite.objects.all(),
-        required=True,
-    )
+    # country = forms.ChoiceField(choices=COUNTRIES.items())
+    # collection_site = forms.ModelChoiceField(
+        # queryset=FungalCollectionSite.objects.all(),
+        # required=True,
+    # )
     person = forms.ModelChoiceField(
         queryset=People.objects.all(),
-        required=True,
+        required=False
     )
 
 
 class IsolateConfirmForm(ConfirmImportForm):
-    country = forms.ChoiceField(choices=COUNTRIES.items())
-    collection_site = forms.ModelChoiceField(
-        queryset=FungalCollectionSite.objects.all(),
-        required=True,
-    )
+    # collection_site = forms.ModelChoiceField(
+        # queryset=FungalCollectionSite.objects.all(),
+        # required=True,
+    # )
     person = forms.ModelChoiceField(
         queryset=People.objects.all(),
+        required=False
     )
 
 class VcgTestResultsImportForm(ImportForm):
@@ -71,17 +71,44 @@ class RiceGenotypeConfirmImportForm(ConfirmImportForm):
     pass
 
 class PathotypingResultsImportForm(ImportForm):
-    pass
+    lab = forms.ModelChoiceField(
+        queryset=RiceBlastLab.objects.all(),
+        required=False,
+    )
+    project = forms.ModelChoiceField(
+        queryset=Project.objects.all(),
+        required=False,
+    )
+    person = forms.ModelChoiceField(
+        queryset=People.objects.all(),
+        required=False,
+    )
+
+
 class PathotypingResultsConfirmImportForm(ConfirmImportForm):
-    pass
+    lab = forms.ModelChoiceField(
+        queryset=RiceBlastLab.objects.all(),
+        required=False,
+
+    )
+    project = forms.ModelChoiceField(
+        queryset=Project.objects.all(),
+        required=False,
+    )
+    person = forms.ModelChoiceField(
+        queryset=People.objects.all(),
+        required=False,
+    )
 
 class RiceGeneImportForm(ImportForm):
-    donor_line = forms.ModelChoiceField(
-        queryset=RiceGenotype.objects.all(),
-        required=True
-    )
+    # donor_line = forms.ModelChoiceField(
+        # queryset=RiceGenotype.objects.all(),
+        # required=True
+    # )
+    pass
 class RiceGeneConfirmImportForm(ConfirmImportForm):
-    donor_line = forms.ModelChoiceField(
-        queryset=RiceGenotype.objects.all(),
-        required=True
-    )
+    # donor_line = forms.ModelChoiceField(
+        # queryset=RiceGenotype.objects.all(),
+        # required=True
+    # )
+    pass

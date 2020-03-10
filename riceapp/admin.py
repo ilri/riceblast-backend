@@ -47,26 +47,38 @@ class IsolateAdmin(ImportExportModelAdmin):
 
 class RiceGenotypeAdmin(ImportExportModelAdmin):
     resource_class = RiceGenotypeResource
-# >>>>>>>>Rice Gene Admin<<<<<<<<<<<<<<
 
-class RiceGeneAdmin(ImportMixin, admin.ModelAdmin):
-    resource_class = RiceGeneResource
+
+
+class PathotypingResultsAdmin(ImportExportMixin, admin.ModelAdmin):
+    resource_class = PathotypingResultsResource
 
     def get_import_form(self):
-        return RiceGeneImportForm
+        return PathotypingResultsImportForm
     def get_confirm_import_form(self):
-        return RiceGeneConfirmImportForm
-    
-    def get_form_kwargs(self,form,*args, **kwargs):
-        # pass on `donor_line` to the kwargs for the custom confirm form
-        if isinstance(form, RiceGeneImportForm):
-            if form.is_valid():
-                donor_line = form.cleaned_data['donor_line']
-                kwargs.update({'donor_line':donor_line})
-        return kwargs
+        return PathotypingResultsConfirmImportForm
 
-    def get_resource_kwargs(self,request,*args, **kwargs):
-        return {'request':request}
+
+
+class RiceGeneAdmin(ImportExportModelAdmin):
+    resource_class = RiceGeneResource
+
+    # def get_import_form(self):
+        # return RiceGeneImportForm
+    # def get_confirm_import_form(self):
+        # return RiceGeneConfirmImportForm
+    # 
+
+    # def get_form_kwargs(self,form,*args, **kwargs):
+        # pass on `donor_line` to the kwargs for the custom confirm form
+        # if isinstance(form, RiceGeneImportForm):
+            # if form.is_valid():
+                # donor_line = form.cleaned_data['donor_line']
+                # kwargs.update({'donor_line':donor_line})
+        # return kwargs
+# 
+    # def get_resource_kwargs(self,request,*args, **kwargs):
+        # return {'request':request}
     
 
 admin.site.site_header = 'Rice Blast'
@@ -76,7 +88,7 @@ admin.site.register(People)
 admin.site.register(FungalCollectionSite, FungalCollectionSiteAdmin)
 admin.site.register(Isolate, IsolateAdmin)
 admin.site.register(RiceGenotype, RiceGenotypeAdmin)
-admin.site.register(PathotypingResults)
+admin.site.register(PathotypingResults, PathotypingResultsAdmin)
 admin.site.register(VcgGroup)
 admin.site.register(FungalSmallDnaFragmentsSequence)
 admin.site.register(VCGTestResults)

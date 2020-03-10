@@ -55,14 +55,15 @@ class FungalCollectionSite(models.Model):
 
 class Isolate(models.Model):
     '''Model class for lab isolates '''
-    isolate_id = models.CharField(max_length=100, unique=True)
-    name = models.CharField(max_length=200)
+    isolate_id = models.CharField(max_length=100)
+    isolate_name = models.CharField(max_length=200)
     taxa_name = models.CharField(max_length=200,blank=True)
     tissue_type = models.CharField(max_length=100,null=True)
-    date_collected = models.DateField(null=True,blank=True)
+    date_collected = models.CharField(max_length=100,blank=True)
     date_isolated = models.DateField(null=True,blank=True)
-    country = CountryField()
-    collection_site = models.ForeignKey(FungalCollectionSite,on_delete=models.CASCADE,blank=True,null=True)
+    country = models.CharField(max_length=100,blank=True)
+    host_genotype = models.CharField(max_length=255,blank=True)
+    collection_site = models.CharField(max_length=255,blank=True)
     person = models.ForeignKey(People, on_delete=models.CASCADE,blank=True,null=True)
 
     def __str__(self):
@@ -72,7 +73,7 @@ class Isolate(models.Model):
 
     
 class RiceGenotype(models.Model):
-    CATEGORY_CHOICES = [
+    CATEGORY_CHOICES = [    
         ('released_variety','Released Variety'),
         ('microgenic_line','Microgenic Line'),
         ('interspecific_variety','Interspecific Variety'),
@@ -93,15 +94,16 @@ class RiceGenotype(models.Model):
 
 class RiceGene(models.Model):
     RESISTANCE_CHOICES = [
-        ('complete','Complete'),
-        ('partial','Partial'),
+        ('Complete','Complete'),
+        ('Partial','Partial'),
     ]
-    name = models.CharField(max_length=100)
-    chromosome_id = models.IntegerField()
-    marker = models.CharField(max_length=100)
-    donor_line = models.ForeignKey(RiceGenotype, on_delete=models.CASCADE, blank=True, null=True)
-    resistance_type = models.CharField(choices=RESISTANCE_CHOICES, max_length=50)
-    reference = models.CharField(max_length=200)
+    name = models.CharField(max_length=100,blank=True,null=True)
+    chromosome_id = models.IntegerField(null=True,blank=True)
+    marker = models.CharField(max_length=100,null=True,blank=True)
+    donor_line = models.CharField(max_length=255,null=True,blank=True)
+    # donor_line = models.ForeignKey(RiceGenotype, on_delete=models.CASCADE, blank=True, null=True)
+    resistance_type = models.CharField(choices=RESISTANCE_CHOICES, max_length=50,null=True,blank=True)
+    reference = models.CharField(max_length=200,null=True,blank=True)
     def __str__(self):
         return self.name
 
@@ -127,14 +129,15 @@ class FungalGeneScreenResult(models.Model):
 
 
 class PathotypingResults(models.Model):
-    replicate_id = models.CharField(max_length=100,blank=True)
-    sample_id = models.CharField(max_length=100, unique=True)
-    stock_id = models.CharField(max_length=100)
+    replicate_id = models.CharField(max_length=100,blank=True,null=True)
+    sample_id = models.CharField(max_length=100,null=True,blank=True)
+    stock_id = models.CharField(max_length=100,null=True,blank=True)
     date_inoculated = models.DateField(null=True,blank=True)
     date_scored = models.DateField(null=True,blank=True)
     date_planted = models.DateField(null=True,blank=True)
-    disease_score = models.IntegerField()
-    test_id = models.CharField(max_length=100,blank=True)
+    disease_score = models.IntegerField(blank=True,null=True)
+    test = models.CharField(max_length=100,blank=True,null=True)
+    tray = models.CharField(max_length=100,blank=True,null=True)
     rice_genotype = models.ForeignKey(RiceGenotype, on_delete=models.CASCADE,null=True,blank=True)
     isolate = models.ForeignKey(Isolate, on_delete=models.CASCADE,null=True,blank=True)
     person = models.ForeignKey(People,on_delete=models.CASCADE,null=True,blank=True)
