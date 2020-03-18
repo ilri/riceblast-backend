@@ -22,7 +22,7 @@ class People(models.Model):
     user = models.OneToOneField(User,on_delete=models.CASCADE, primary_key=True)
     full_name = models.CharField(max_length=100)
     telephone_number = models.IntegerField()
-    lab = models.ForeignKey(RiceBlastLab, on_delete=models.CASCADE, related_name='lab_people')
+    lab = models.ForeignKey(RiceBlastLab, on_delete=models.CASCADE, related_name='lab_people',null=True,blank=True)
     designation = models.CharField(max_length=100)
 
     def __str__(self):
@@ -33,7 +33,7 @@ class Project(models.Model):
     donor = models.CharField(max_length=255)
     start = models.DateField()
     finish = models.DateField()
-    prinicipal_investigator = models.ForeignKey(People, on_delete=models.CASCADE)
+    prinicipal_investigator = models.ForeignKey(People, on_delete=models.CASCADE,null=True,blank=True)
 
     def __str__(self):
         return self.project_name
@@ -46,8 +46,8 @@ class FungalCollectionSite(models.Model):
     latitude = models.DecimalField(default=0.0000,max_digits=6, decimal_places=4)
     longitude = models.DecimalField(default=0.0000,max_digits=6, decimal_places=4)
     country = CountryField()
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    person = models.ForeignKey(People, on_delete=models.CASCADE, related_name='field_person')
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True,blank=True)
+    person = models.ForeignKey(People, on_delete=models.CASCADE, related_name='field_person',null=True,blank=True)
 
     
     def __str__(self):
