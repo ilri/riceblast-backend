@@ -28,6 +28,19 @@ urlpatterns = [
     path('api/login/', views.current_user),
     path('api/labs/', views.riceblastlabs),
     path('api/collection_sites/',views.fungal_collection_sites),
+    path('api/isolates/',views.isolates),
+    path('api/rice_genotypes/',views.rice_genotypes),
+    path('api/rice_genes/', views.rice_genes),
+    path('api/rgs/', views.rgs),
+    path('api/fgs/',views.fgs),
+    path('api/pathotyping_results/',views.pathotyping_results),
+    path('api/vcg_groups/',views.vcg_groups),
+    path('api/fungal_small/',views.fungal_small),
+    path('api/rice_small/',views.rice_small),
+    path('api/vcg_test_results/',views.vcg_test_results),
+    path('api/protocol/',views.protocol),
+    path('api/rice_gbs/',views.rice_gbs),
+    path('api/fungal_gbs/',views.fungal_gbs),
 ]
 
 if settings.DEBUG:

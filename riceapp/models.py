@@ -148,10 +148,10 @@ class PathotypingResults(models.Model):
         return self.sample_id
 
 class VcgGroup(models.Model):
-    group = models.CharField(max_length=200)
-    vcg_id = models.CharField(max_length=100, unique=True) 
-    lab = models.ForeignKey(RiceBlastLab, on_delete=models.CASCADE)
-    person = models.ForeignKey(People, on_delete=models.CASCADE)
+    group = models.CharField(max_length=200,null=True,blank=True)
+    vcg_id = models.CharField(max_length=100, null=True,blank=True) 
+    lab = models.ForeignKey(RiceBlastLab, on_delete=models.CASCADE,null=True,blank=True)
+    person = models.ForeignKey(People, on_delete=models.CASCADE,null=True,blank=True)
 
     def __str__(self):
         return self.group 
