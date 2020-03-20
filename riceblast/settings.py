@@ -76,10 +76,9 @@ REST_FRAMEWORK = {
 
 CORS_ORIGIN_ALLOW_ALL = False
 
-CORS_ORIGIN_WHITELIST = (
-    # 'http://localhost:3000',
-    'https://riceblast-ilri.netlify.com'
-)
+CORS_ORIGIN_WHITELIST = [
+    'https://riceblast-ilri.netlify.com/'
+]
 
 
 JWT_AUTH = {
