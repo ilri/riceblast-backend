@@ -41,6 +41,7 @@ urlpatterns = [
     path('api/protocol/',views.protocol),
     path('api/rice_gbs/',views.rice_gbs),
     path('api/fungal_gbs/',views.fungal_gbs),
+    path('api/register/',views.UserList.as_view()),
 ]
 
 if settings.DEBUG:

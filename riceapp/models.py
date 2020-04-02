@@ -46,7 +46,7 @@ class FungalCollectionSite(models.Model):
     latitude = models.DecimalField(default=0.0000,max_digits=6, decimal_places=4)
     longitude = models.DecimalField(default=0.0000,max_digits=6, decimal_places=4)
     country = CountryField()
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True,blank=True)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, blank=True)
     person = models.ForeignKey(People, on_delete=models.CASCADE, related_name='field_person',null=True,blank=True)
 
     
@@ -56,14 +56,14 @@ class FungalCollectionSite(models.Model):
 class Isolate(models.Model):
     '''Model class for lab isolates '''
     isolate_id = models.CharField(max_length=100)
-    isolate_name = models.CharField(max_length=200)
-    taxa_name = models.CharField(max_length=200,blank=True)
-    tissue_type = models.CharField(max_length=100,null=True)
-    date_collected = models.CharField(max_length=100,blank=True)
+    isolate_name = models.CharField(max_length=200,null=True,blank=True)
+    taxa_name = models.CharField(max_length=200,blank=True,null=True)
+    tissue_type = models.CharField(max_length=100,null=True,blank=True)
+    date_collected = models.CharField(max_length=100,blank=True,null=True)
     date_isolated = models.DateField(null=True,blank=True)
-    country = models.CharField(max_length=100,blank=True)
-    host_genotype = models.CharField(max_length=255,blank=True)
-    collection_site = models.CharField(max_length=255,blank=True)
+    country = models.CharField(max_length=100,blank=True,null=True)
+    host_genotype = models.CharField(max_length=255,blank=True,null=True)
+    collection_site = models.CharField(max_length=255,blank=True,null=True)
     person = models.ForeignKey(People, on_delete=models.CASCADE,blank=True,null=True)
 
     def __str__(self):

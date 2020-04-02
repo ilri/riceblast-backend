@@ -54,6 +54,41 @@ class CustomJWTSerializer(TokenObtainPairSerializer):
 
         return super().validate(credentials)
 
+class UserList(APIView):
+    ''' API class based view for handling User Information'''
+    def post(self, request,format=None):
+        user_info = {
+            'username':request.data.get('username'),
+            'email':request.data.get('email'),
+            'password':request.data.get('password'),
+        }
+        people_info = {
+            'full_name':request.data.get('full_name'),
+            'telephone_number':request.data.get('telephone_number'),
+            'lab':request.data.get('lab'),
+            'designation':request.data.get('designation'),
+        }
+        
+        user_serializer = UserSerializerWithToken(data=user_info)
+
+        # CHECK IF CREDENTIALS EXIST
+        check_username = User.objects.filter(username=user_info['username'])
+        check_email = User.objects.filter(email=user_info['email'])
+        if len(check_username) is 0:
+            if len(check_email) is 0:
+                if user_serializer.is_valid():
+                    user = user_serializer.save()
+                    people_info['user'] = user.pk
+                    print(user_info,people_info)
+                    people_serializer = PeopleSerializer(data=people_info)
+                    if people_serializer.is_valid():
+                        people_serializer.save()
+                        return Response({"message":'User has been successfully registered.'},status=status.HTTP_201_CREATED)
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message":'Email already Exists. Please use a different email.'},status=status.HTTP_406_NOT_ACCEPTABLE)
+        return Response({"message":'Username already Exists. Please use a different username.'},status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
 @api_view(['GET'])
 def current_user(request):
     """
