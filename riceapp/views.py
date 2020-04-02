@@ -12,7 +12,7 @@ from rest_framework_jwt.views import ObtainJSONWebToken
 from rest_framework_jwt.settings import api_settings
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import *
-from .serializers.people import PeopleSerializer 
+from .serializers.people import PeopleSerializer,PeopleUserSerializer 
 from .serializers.riceblastlabs import RiceblastlabSerializer
 from .serializers.collectionsites import CollectionSiteSerializer
 from .serializers.isolates import IsolateSerializer
@@ -80,11 +80,14 @@ class UserList(APIView):
                     user = user_serializer.save()
                     people_info['user'] = user.pk
                     print(user_info,people_info)
+
                     people_serializer = PeopleSerializer(data=people_info)
                     if people_serializer.is_valid():
+                        # people_serializer.user = user
                         people_serializer.save()
-                        return Response({"message":'User has been successfully registered.'},status=status.HTTP_201_CREATED)
-                return Response(status=status.HTTP_400_BAD_REQUEST)
+                        return Response({"message":'User has been successfully registered. You can add another user above.'},status=status.HTTP_201_CREATED)
+                    return Response({"message":'One/More of your Professional Information Fields has an Error.'},status=status.HTTP_400_BAD_REQUEST)                    
+                return Response({"message":'One or more fields has the wrong data type.'}, status=status.HTTP_400_BAD_REQUEST)
             return Response({"message":'Email already Exists. Please use a different email.'},status=status.HTTP_406_NOT_ACCEPTABLE)
         return Response({"message":'Username already Exists. Please use a different username.'},status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -95,8 +98,16 @@ def current_user(request):
     Determine the current user by their token, and return their data.
     """
     people_data = People.objects.get(user=request.user.pk)
-    serializer = PeopleSerializer(people_data)
+    serializer = PeopleUser(people_data)
     return Response(serializer.data)        
+@api_view(['GET'])
+def all_people(request):
+    '''
+    Get all people in the system.
+    '''
+    people = People.objects.all()
+    serializer = PeopleUserSerializer(people, many=True)
+    return Response(serializer.data)
 
 @api_view(['GET'])
 def riceblastlabs(request):

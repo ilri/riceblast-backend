@@ -21,7 +21,7 @@ class People(models.Model):
 
     user = models.OneToOneField(User,on_delete=models.CASCADE, primary_key=True)
     full_name = models.CharField(max_length=100)
-    telephone_number = models.IntegerField()
+    telephone_number = models.CharField(max_length=100)
     lab = models.ForeignKey(RiceBlastLab, on_delete=models.CASCADE, related_name='lab_people',null=True,blank=True)
     designation = models.CharField(max_length=100)
 
