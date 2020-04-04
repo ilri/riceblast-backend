@@ -43,6 +43,7 @@ urlpatterns = [
     path('api/fungal_gbs/',views.fungal_gbs),
     path('api/register/',views.UserList.as_view()),
     path('api/people/',views.all_people),
+    path('api/user_activation/',views.activate_user),
 ]
 
 if settings.DEBUG:

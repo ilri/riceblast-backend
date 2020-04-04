@@ -91,6 +91,27 @@ class UserList(APIView):
             return Response({"message":'Email already Exists. Please use a different email.'},status=status.HTTP_406_NOT_ACCEPTABLE)
         return Response({"message":'Username already Exists. Please use a different username.'},status=status.HTTP_406_NOT_ACCEPTABLE)
 
+@api_view(['PUT'])
+def activate_user(request):
+    '''
+    Admin function for activating/deactivating user accounts based on request action.
+    '''
+    username = request.data.get('username')
+    action = request.data.get('action')
+    user = User.objects.get(username=username)
+    print(action == 'activate')
+    if action == 'activate':
+        user.is_active = True
+        user.save()
+        return Response({'message':'User has been Activated.'},status=status.HTTP_200_OK)
+    else:
+        user.is_active = False
+        user.save()
+        return Response({'message':'User has been Deactivated.'},status=status.HTTP_200_OK)
+    return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+
 
 @api_view(['GET'])
 def current_user(request):
