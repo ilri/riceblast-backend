@@ -90,6 +90,17 @@ class UserList(APIView):
                 return Response({"message":'One or more fields has the wrong data type.'}, status=status.HTTP_400_BAD_REQUEST)
             return Response({"message":'Email already Exists. Please use a different email.'},status=status.HTTP_406_NOT_ACCEPTABLE)
         return Response({"message":'Username already Exists. Please use a different username.'},status=status.HTTP_406_NOT_ACCEPTABLE)
+    
+    def delete(self,request,username,format=None):
+        print(username)
+        user = User.objects.get(username=username)
+        person = People.objects.get(user=user)
+        user.delete()
+        person.delete()
+        return Response(status=status.HTTP_200_OK)
+
+
+
 
 @api_view(['PUT'])
 def activate_user(request):

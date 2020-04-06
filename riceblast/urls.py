@@ -14,7 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path,include
+from django.urls import path,include,re_path
 from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework_simplejwt import views as jwt_views 
@@ -42,8 +42,11 @@ urlpatterns = [
     path('api/rice_gbs/',views.rice_gbs),
     path('api/fungal_gbs/',views.fungal_gbs),
     path('api/register/',views.UserList.as_view()),
+    re_path('api/user_delete/(\w+)',views.UserList.as_view()),
     path('api/people/',views.all_people),
     path('api/user_activation/',views.activate_user),
+    # path('api/user_delete/',views.delete_user),
+
 ]
 
 if settings.DEBUG:
