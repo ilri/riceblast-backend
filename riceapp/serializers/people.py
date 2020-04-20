@@ -15,6 +15,7 @@ class PeopleUserSerializer(serializers.ModelSerializer):
 
     def get_user(self,person):
         return {
+            'pk':person.user.pk,
             "email":person.user.email,
             "username":person.user.username,
             "is_active":person.user.is_active,

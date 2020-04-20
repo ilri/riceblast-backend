@@ -8,13 +8,18 @@ class CollectionSiteSerializer(serializers.ModelSerializer):
     def get_project(self,collection_site):
         if collection_site.project is not None:
             return collection_site.project.project_name
-        return 'Unknown'
+        return None
 
     def get_person(self,collection_site):
         if collection_site.person is not None:
             return collection_site.person.full_name
-        return 'Unknown'
+        return None
         
     class Meta:
         model = FungalCollectionSite
-        fields = ('name','type','latitude','longitude','country','project','person')
+        fields = ('pk','name','type','latitude','longitude','country','project','person')
+
+class CollectionSitePostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FungalCollectionSite
+        fields = ('pk','name','type','latitude','longitude','country')

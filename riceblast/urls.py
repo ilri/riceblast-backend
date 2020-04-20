@@ -27,7 +27,7 @@ urlpatterns = [
     path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
     path('api/login/', views.current_user),
     path('api/labs/', views.riceblastlabs),
-    path('api/collection_sites/',views.fungal_collection_sites),
+    path('api/collection_sites/',views.CollectionSiteList.as_view()),
     path('api/isolates/',views.isolates),
     path('api/rice_genotypes/',views.rice_genotypes),
     path('api/rice_genes/', views.rice_genes),

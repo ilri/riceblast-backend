@@ -14,7 +14,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import *
 from .serializers.people import PeopleSerializer,PeopleUserSerializer 
 from .serializers.riceblastlabs import RiceblastlabSerializer
-from .serializers.collectionsites import CollectionSiteSerializer
+from .serializers.collectionsites import CollectionSiteSerializer,CollectionSitePostSerializer
 from .serializers.isolates import IsolateSerializer
 from .serializers.rice_genotypes import RiceGenotypeSerializer
 from .serializers.rice_genes import RiceGenesSerializer
@@ -150,14 +150,73 @@ def riceblastlabs(request):
     serializer = RiceblastlabSerializer(riceblastlabs, many=True)
     return Response(serializer.data)
 
-@api_view(['GET'])
-def fungal_collection_sites(request):
-    '''
-    All Fungal Collection Sites.
-    '''
-    collection_sites = FungalCollectionSite.objects.all()
-    serializer = CollectionSiteSerializer(collection_sites, many=True)
-    return Response(serializer.data)
+
+class CollectionSiteList(APIView):
+    '''API Class view for Handling requests to Fungal Collection Sites'''
+
+    def get(self,request,format=None):
+        collection_sites = FungalCollectionSite.objects.all()
+        serializer = CollectionSiteSerializer(collection_sites, many=True)
+        return Response(serializer.data)
+
+    def post(self,request,format=None):
+        print(request.data)
+        new_site = {
+            'name':request.data.get('name'),
+            'type':request.data.get('type'),
+            'latitude':request.data.get('latitude'),
+            'longitude':request.data.get('longitude'),
+            'country':request.data.get('country'),
+        }
+        serializer = CollectionSitePostSerializer(data=new_site)
+
+        project = None
+        if request.data.get('project') is not None:
+            project = Project.objects.get(pk=request.data.get('project'))
+
+        person = None
+        if request.data.get('person') is not None:
+            person = People.objects.get(pk=request.data.get('person'))
+
+        if serializer.is_valid():
+            print('yes')
+            site = serializer.save()
+            site.project = project
+            site.person = person
+            site.save()
+            return Response(status=status.HTTP_200_OK)
+        print(serializer.errors)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+    
+    def put(self,request,format=None):
+        print(request.data)
+        site_id = request.data.get('pk')
+        site = FungalCollectionSite.objects.get(pk=site_id)
+        if site.name is not request.data.get('name'):
+            site.name = request.data.get('name')
+        if site.type is not request.data.get('type'):
+            site.type = request.data.get('type')
+        if site.longitude is not request.data.get('longitude'):
+            site.longitude = request.data.get('longitude')
+        if site.latitude is not request.data.get('latitude'):
+            site.latitude = request.data.get('latitude')  
+        if site.country is not request.data.get('country'):
+            site.country = request.data.get('country')                                                
+        if site.project is not request.data.get('project') and isinstance(request.data.get('person'),int):
+            project = Project.objects.get(pk=request.data.get('project'))
+            site.project = project 
+        if site.person is not request.data.get('person') and isinstance(request.data.get('person'),int):
+            person = People.objects.get(pk=request.data.get('person'))
+            site.person = person                        
+        site.save()
+        return Response(status=status.HTTP_200_OK)
+    
+    def delete(self,request,format=None):
+        print(request)
+        return Response(status=status.HTTP_200_OK)
+
+
+
 
 
 @api_view(['GET'])
@@ -186,7 +245,7 @@ def rice_genes(request):
     '''
     rice_genes = RiceGene.objects.all()
     serializer = RiceGenesSerializer(rice_genes, many=True)
-    return Response(serializer.data) \
+    return Response(serializer.data) 
 
 @api_view(['GET'])
 def rgs(request):
