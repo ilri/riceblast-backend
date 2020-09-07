@@ -28,7 +28,7 @@ from .serializers.vcg_test_results import VCGTestResultsSerializer
 from .serializers.protocols import ProtocolSerializer
 from .serializers.rice_gbs import RiceGBSSerializer
 from .serializers.fungal_gbs import FungalGBSSerializer
-
+from django.db.models.functions import Upper
 
 
 
@@ -141,14 +141,70 @@ def all_people(request):
     serializer = PeopleUserSerializer(people, many=True)
     return Response(serializer.data)
 
-@api_view(['GET'])
-def riceblastlabs(request):
-    '''
-    All Rice Blast Labs.
-    '''
-    riceblastlabs = RiceBlastLab.objects.all()
-    serializer = RiceblastlabSerializer(riceblastlabs, many=True)
-    return Response(serializer.data)
+
+
+
+
+
+
+
+
+
+class RiceBlastLabList(APIView):
+    '''Class based view for Labs'''
+
+    def get(self,request,format=None):
+        riceblastlabs = RiceBlastLab.objects.all().order_by('pk')
+        serializer = RiceblastlabSerializer(riceblastlabs, many=True)
+        return Response(serializer.data) 
+    
+    def post(self,request,format=None):
+        print(request.data)
+        new_lab = { 
+            'lab_id':request.data.get('lab_id'),
+            'lab_name':request.data.get('lab_name'),
+            'country':request.data.get('country'),
+            'institution':request.data.get('institution'),
+            'principal_investigator':request.data.get('principal_investigator'),
+        }
+        serializer = RiceblastlabSerializer(data=new_lab)
+        convert_to_uppercase = new_lab['lab_id'].upper()
+        print(convert_to_uppercase)
+        lab_id_exists = RiceBlastLab.objects.filter(lab_id=convert_to_uppercase)
+        if len(lab_id_exists) == 0:
+            if serializer.is_valid():
+                serializer.save()
+            else:        
+                return Response(status=status.HTTP_200_OK)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        return Response({'message':'Lab ID already exists'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    def delete(self,request, pk,format=None):
+        print(pk)
+        lab = RiceBlastLab.objects.get(pk=pk)
+        lab.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def put(self, request, format=None):
+        print(request.data)
+        lab_id = request.data.get('pk')
+        lab = RiceBlastLab.objects.get(pk=lab_id)
+        if lab.lab_id is not request.data.get('lab_id'):
+            lab.lab_id = request.data.get('lab_id')
+        if lab.lab_name is not request.data.get('lab_name'):
+            lab.lab_name = request.data.get('lab_name')
+        if lab.country is not request.data.get('country'):
+            lab.country = request.data.get('country')                                                
+        if lab.institution is not request.data.get('institution'):
+            lab.institution = request.data.get('institution')  
+        if lab.principal_investigator is not request.data.get('principal_investigator'):
+            lab.principal_investigator = request.data.get('principal_investigator')                        
+        lab.save()
+
+        return Response(status=status.HTTP_200_OK)
+###############################################333333333######
+##################################################################3
+#################################################################
 
 
 class CollectionSiteList(APIView):
@@ -161,6 +217,7 @@ class CollectionSiteList(APIView):
 
     def post(self,request,format=None):
         print(request.data)
+
         new_site = {
             'name':request.data.get('name'),
             'type':request.data.get('type'),
@@ -168,6 +225,7 @@ class CollectionSiteList(APIView):
             'longitude':request.data.get('longitude'),
             'country':request.data.get('country'),
         }
+
         serializer = CollectionSitePostSerializer(data=new_site)
 
         project = None
@@ -211,23 +269,80 @@ class CollectionSiteList(APIView):
         site.save()
         return Response(status=status.HTTP_200_OK)
     
-    def delete(self,request,format=None):
-        print(request)
+    def delete(self,request,pk,format=None):
+        site = FungalCollectionSite.objects.get(pk=pk)
+        print(site)
+        site.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class IsolateList(APIView):
+    def get(self,request,format=None):
+        isolates = Isolate.objects.all().order_by('pk')
+        serializer = IsolateSerializer(isolates, many=True)
+        return Response(serializer.data)  
+
+    def post(self,request,format=None):
+        print(request.data)
+        # ADD USER - PERSON REGISTERS PK/ID
+        new_isolate = {
+            'isolate_id':request.data.get('isolate_id'),
+            'isolate_name':request.data.get('isolate_name'),
+            'taxa_name':request.data.get('taxa_name'),
+            'date_collected':request.data.get('date_collected'),
+            'date_isolated':request.data.get('date_isolated'),
+            'country':request.data.get('country'),
+            'host_genotype':request.data.get('host_genotype'),
+            'collection_site':request.data.get('collection_site'),
+        }
+
+        serializer = IsolateSerializer(data=new_isolate)
+
+        person = None
+        if request.data.get('person') is not None:
+            person = People.objects.get(pk=request.data.get('person'))
+
+        if serializer.is_valid():
+            isolate = serializer.save()
+            isolate.person = person
+            isolate.save()
+            return Response(status=status.HTTP_200_OK)
+        print(serializer.errors)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)        
+
+    def put(self,request,format=None):
+        print(request.data)
+        isolate = Isolate.objects.get(pk=request.data.get('pk'))
+        if isolate.isolate_id is not request.data.get('isolate_id'):
+            isolate.isolate_id = request.data.get('isolate_id')
+        if isolate.isolate_name is not request.data.get('isolate_name'):
+            isolate.isolate_name = request.data.get('isolate_name')
+        if isolate.taxa_name is not request.data.get('taxa_name'):
+            isolate.taxa_name = request.data.get('taxa_name')
+        if isolate.tissue_type is not request.data.get('tissue_type'):
+            isolate.tissue_type = request.data.get('tissue_type') 
+        if isolate.date_collected is not request.data.get('date_collected'):
+            isolate.date_collected = request.data.get('date_collected') 
+        if isolate.tissue_type is not request.data.get('tissue_type'):
+            isolate.tissue_type = request.data.get('tissue_type') 
+        if isolate.date_isolated is not request.data.get('date_isolated'):
+            isolate.date_isolated = request.data.get('date_isolated')                                      
+        if isolate.country is not request.data.get('country'):
+            isolate.country = request.data.get('country') 
+        if isolate.host_genotype is not request.data.get('host_genotype'):
+            isolate.host_genotype = request.data.get('host_genotype')                                                   
+        if isolate.person is not request.data.get('person') and isinstance(request.data.get('person'),int):
+            person = People.objects.get(pk=request.data.get('person'))
+            isolate.person = person                        
+        isolate.save()    
         return Response(status=status.HTTP_200_OK)
 
 
-
-
-
-@api_view(['GET'])
-def isolates(request):
-    '''
-    All Isolates.
-    '''
-    isolates = Isolate.objects.all()
-    serializer = IsolateSerializer(isolates, many=True)
-    return Response(serializer.data)    
-
+    def delete(self,request,pk,format=None):
+        isolate = Isolate.objects.get(pk=pk)
+        print(isolate)
+        isolate.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 @api_view(['GET'])
 def rice_genotypes(request):

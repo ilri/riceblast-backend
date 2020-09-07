@@ -3,7 +3,10 @@ from django.contrib.auth.models import User
 from django_countries.fields import CountryField
 
 
+# FUTURE MODFICATIONS 
+# 1. Change use of in-built User model
 
+    
 # Create your models here.
 class RiceBlastLab(models.Model):
     ''' Model class for Rice Blast Labs '''
@@ -25,6 +28,9 @@ class People(models.Model):
     lab = models.ForeignKey(RiceBlastLab, on_delete=models.CASCADE, related_name='lab_people',null=True,blank=True)
     designation = models.CharField(max_length=100)
 
+    class Meta:
+        verbose_name_plural = 'People'
+
     def __str__(self):
         return self.full_name
 
@@ -42,10 +48,10 @@ class FungalCollectionSite(models.Model):
     ''' Model class for Collection Fields '''
 
     name = models.CharField(max_length=200)
-    type = models.CharField(max_length=100)
+    type = models.CharField(max_length=100, null=True, blank=True)
     latitude = models.DecimalField(default=0.0000,max_digits=6, decimal_places=4)
     longitude = models.DecimalField(default=0.0000,max_digits=6, decimal_places=4)
-    country = CountryField()
+    country = CountryField(default='KE')
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, blank=True)
     person = models.ForeignKey(People, on_delete=models.CASCADE, related_name='field_person',null=True,blank=True)
 
@@ -60,7 +66,7 @@ class Isolate(models.Model):
     taxa_name = models.CharField(max_length=200,blank=True,null=True)
     tissue_type = models.CharField(max_length=100,null=True,blank=True)
     date_collected = models.CharField(max_length=100,blank=True,null=True)
-    date_isolated = models.DateField(null=True,blank=True)
+    date_isolated = models.CharField(max_length=100,null=True,blank=True)
     country = models.CharField(max_length=100,blank=True,null=True)
     host_genotype = models.CharField(max_length=255,blank=True,null=True)
     collection_site = models.CharField(max_length=255,blank=True,null=True)
@@ -144,6 +150,8 @@ class PathotypingResults(models.Model):
     lab = models.ForeignKey(RiceBlastLab, on_delete=models.CASCADE,null=True,blank=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE,null=True,blank=True)
 
+    class Meta:
+        verbose_name_plural = 'Pathotyping Results'
     def __str__(self):
         return self.sample_id
 

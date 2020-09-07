@@ -26,9 +26,9 @@ urlpatterns = [
     path('api/token/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
     path('api/login/', views.current_user),
-    path('api/labs/', views.riceblastlabs),
-    path('api/collection_sites/',views.CollectionSiteList.as_view()),
-    path('api/isolates/',views.isolates),
+    re_path(r'api/labs/(\d*)', views.RiceBlastLabList.as_view()),
+    re_path(r'api/collection_sites/(\d*)',views.CollectionSiteList.as_view()),
+    re_path(r'api/isolates/(\d*)',views.IsolateList.as_view()),
     path('api/rice_genotypes/',views.rice_genotypes),
     path('api/rice_genes/', views.rice_genes),
     path('api/rgs/', views.rgs),
@@ -46,6 +46,7 @@ urlpatterns = [
     path('api/people/',views.all_people),
     path('api/user_activation/',views.activate_user),
     # path('api/user_delete/',views.delete_user),
+    # path('/api/')
 
 ]
 
