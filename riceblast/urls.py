@@ -29,7 +29,7 @@ urlpatterns = [
     re_path(r'api/labs/(\d*)', views.RiceBlastLabList.as_view()),
     re_path(r'api/collection_sites/(\d*)',views.CollectionSiteList.as_view()),
     re_path(r'api/isolates/(\d*)',views.IsolateList.as_view()),
-    path('api/rice_genotypes/',views.rice_genotypes),
+    re_path(r'api/rice_genotypes/(\d*)',views.RiceGenotypeList.as_view()),
     path('api/rice_genes/', views.rice_genes),
     path('api/rgs/', views.rgs),
     path('api/fgs/',views.fgs),

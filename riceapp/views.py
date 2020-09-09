@@ -344,14 +344,40 @@ class IsolateList(APIView):
         isolate.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-@api_view(['GET'])
-def rice_genotypes(request):
+
+
+class RiceGenotypeList(APIView):
     '''
     All Rice Genotypes.
     '''
-    rice_genotypes = RiceGenotype.objects.all()
-    serializer = RiceGenotypeSerializer(rice_genotypes, many=True)
-    return Response(serializer.data)     
+    def get(self,request,format=None):
+        rice_genotypes = RiceGenotype.objects.all()
+        serializer = RiceGenotypeSerializer(rice_genotypes, many=True)
+        return Response(serializer.data)    
+  
+    def post(self,request,format=None):
+        print(request.data)
+        new_genotype = {
+            'name':request.data.get('name'),
+            'rice_genotype_id':request.data.get('rice_genotype_id'),
+            'resistance_genes':request.data.get('resistance_genes'),
+            'r_gene_sources':request.data.get('r_gene_sources'),
+            'susceptible_background':request.data.get('susceptible_background'),
+            'accession_number':request.data.get('accession_number'),
+            'pedigree':request.data.get('pedigree'),
+            'category':request.data.get('category'),
+        }
+        serializer = RiceGenotypeSerializer(data=new_genotype)
+              
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)  
+        print(serializer.errors)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)  
+
+
+   
 
 @api_view(['GET'])
 def rice_genes(request):
