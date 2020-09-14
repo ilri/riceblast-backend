@@ -11,4 +11,4 @@ class FGSSerializer(serializers.ModelSerializer):
         return 'Unknown'    
     class Meta:
         model = FungalGeneScreenResult
-        fields = ['rice_genotype','fungal_gene','pcr_results','replicate_id','sample_id']
+        fields = ['pk','rice_genotype','fungal_gene','pcr_results','replicate_id','sample_id']

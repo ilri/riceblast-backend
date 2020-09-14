@@ -18,7 +18,7 @@ from .serializers.collectionsites import CollectionSiteSerializer,CollectionSite
 from .serializers.isolates import IsolateSerializer
 from .serializers.rice_genotypes import RiceGenotypeSerializer
 from .serializers.rice_genes import RiceGenesSerializer
-from .serializers.rgs import RGSSerializer
+from .serializers.rgs import RGSSerializer,RGSPostSerializer
 from .serializers.fgs import FGSSerializer
 from .serializers.pathotyping_results import PathotypingResultsSerializer
 from .serializers.vcg_groups import VCGGroupSerializer
@@ -351,7 +351,7 @@ class RiceGenotypeList(APIView):
     All Rice Genotypes.
     '''
     def get(self,request,format=None):
-        rice_genotypes = RiceGenotype.objects.all()
+        rice_genotypes = RiceGenotype.objects.all().order_by('pk')
         serializer = RiceGenotypeSerializer(rice_genotypes, many=True)
         return Response(serializer.data)    
   
@@ -376,35 +376,220 @@ class RiceGenotypeList(APIView):
         print(serializer.errors)
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)  
 
+    def put(self,request,format=None):
+        print(request.data)
+        rice_genotype = RiceGenotype.objects.get(pk=request.data.get('pk'))
 
-   
 
-@api_view(['GET'])
-def rice_genes(request):
+        if rice_genotype.name is not request.data.get('name'):
+            rice_genotype.name = request.data.get('name')
+        if rice_genotype.rice_genotype_id is not request.data.get('rice_genotype_id'):
+            rice_genotype.rice_genotype_id = request.data.get('rice_genotype_id')
+        if rice_genotype.resistance_genes is not request.data.get('resistance_genes'):
+            rice_genotype.resistance_genes = request.data.get('resistance_genes')
+        if rice_genotype.r_gene_sources is not request.data.get('r_gene_sources'):
+            rice_genotype.r_gene_sources = request.data.get('r_gene_sources')
+        # if rgs.rice_genotype is not None:
+            # return rgs.rice_genotype.name'r_gene_sources')
+        if rice_genotype.susceptible_background is not request.data.get('susceptible_background'):
+            rice_genotype.susceptible_background = request.data.get('susceptible_background')
+        if rice_genotype.accession_number is not request.data.get('accession_number'):
+            rice_genotype.accession_number = request.data.get('accession_number')
+        if rice_genotype.pedigree is not request.data.get('pedigree'):
+            rice_genotype.pedigree = request.data.get('pedigree')                                                   
+        if rice_genotype.category is not request.data.get('category'):
+            rice_genotype.category = request.data.get('category')
+        rice_genotype.save()    
+        return Response(status=status.HTTP_200_OK)
+
+
+    def delete(self,request,pk,format=None):
+        rice_genotype = RiceGenotype.objects.get(pk=pk)
+        rice_genotype.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class RiceGenesList(APIView):
     '''
     All Rice Genes.
     '''
-    rice_genes = RiceGene.objects.all()
-    serializer = RiceGenesSerializer(rice_genes, many=True)
-    return Response(serializer.data) 
+    def get(self,request,format=None):
+        rice_genes = RiceGene.objects.all().order_by('pk')
+        serializer = RiceGenesSerializer(rice_genes, many=True)
+        return Response(serializer.data) 
 
-@api_view(['GET'])
-def rgs(request):
+    def post(self,request,format=None):
+        print(request.data)
+        new_gene = {
+            'name':request.data.get('name'),
+            'chromosome_id':request.data.get('chromosome_id'),
+            'marker':request.data.get('marker'),
+            'donor_line':request.data.get('donor_line'),
+            'resistance_type':request.data.get('resistance_type'),
+            'reference':request.data.get('reference'),
+        }
+        serializer = RiceGenesSerializer(data=new_gene)
+              
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)  
+        print(serializer.errors)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)  
+
+
+    def put(self,request,format=None):
+        print(request.data)
+        rice_gene = RiceGene.objects.get(pk=request.data.get('pk'))
+
+
+        if rice_gene.name is not request.data.get('name'):
+            rice_gene.name = request.data.get('name')
+        if rice_gene.chromosome_id is not request.data.get('chromosome_id'):
+            rice_gene.chromosome_id = request.data.get('chromosome_id')
+        if rice_gene.marker is not request.data.get('marker'):
+            rice_gene.marker = request.data.get('marker')
+        if rice_gene.donor_line is not request.data.get('donor_line'):
+            rice_gene.donor_line = request.data.get('donor_line')
+        if rice_gene.resistance_type is not request.data.get('resistance_type'):
+            rice_gene.resistance_type = request.data.get('resistance_type')
+        if rice_gene.reference is not request.data.get('reference'):
+            rice_gene.reference = request.data.get('reference')
+
+        rice_gene.save()    
+        return Response(status=status.HTTP_200_OK)
+
+    def delete(self,request,pk,format=None):
+        rice_gene = RiceGene.objects.get(pk=pk)
+        rice_gene.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class RGSResultsList(APIView):
     '''
     All Rice Gene Screen Results.
     '''
-    rgs_results = RiceGeneScreenResult.objects.all()
-    serializer = RGSSerializer(rgs_results, many=True)
-    return Response(serializer.data)
+    def get(self,request,format=None):
+        rgs_results = RiceGeneScreenResult.objects.all().order_by('pk')
+        serializer = RGSSerializer(rgs_results, many=True)
+        return Response(serializer.data)
 
-@api_view(['GET'])
-def fgs(request):
+    def post(self,request,format=None):
+        new_rgs = {
+            'pcr_results':request.data.get('pcr_results'),
+            'replicate_id':request.data.get('replicate_id'),
+            'sample_id':request.data.get('sample_id'),
+        }
+
+        serializer = RGSPostSerializer(data=new_rgs)
+        rice_genotype = None
+        rice_gene = None
+        print(request.data)
+
+        if request.data.get('rice_genotype') is not None:
+            rice_genotype = RiceGenotype.objects.get(pk=request.data.get('rice_genotype'))             
+        if request.data.get('rice_gene') is not None:
+            rice_gene = RiceGene.objects.get(pk=request.data.get('rice_gene'))   
+
+        if serializer.is_valid(): 
+            rgs = serializer.save()
+            rgs.rice_genotype = rice_genotype
+            rgs.rice_gene = rice_gene
+            print(rgs)
+            rgs.save()
+            return Response(status=status.HTTP_200_OK)  
+        print(serializer.errors)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)  
+
+
+    def put(self,request,format=None):
+        print(request.data)
+        rgs = RiceGeneScreenResult.objects.get(pk=request.data.get('pk'))
+
+        rice_genotype = RiceGenotype.objects.get(pk=request.data.get('rice_genotype'))
+        rice_gene = RiceGene.objects.get(pk=request.data.get('rice_gene'))
+
+
+        if rgs.pcr_results is not request.data.get('pcr_results'):
+            rgs.pcr_results = request.data.get('pcr_results')
+        if rgs.replicate_id is not request.data.get('replicate_id'):
+            rgs.replicate_id = request.data.get('replicate_id')
+        if rgs.sample_id is not request.data.get('sample_id'):
+            rgs.sample_id = request.data.get('sample_id')
+        if rgs.rice_genotype.pk is not request.data.get('rice_genotype'): ##CHANGE
+            rgs.rice_genotype = rice_genotype
+        if rgs.rice_gene.pk is not request.data.get('rice_gene'): ##CHANGE
+            rgs.rice_gene = rice_gene
+        rgs.save()    
+        return Response(status=status.HTTP_200_OK)
+
+    def delete(self,request,pk,format=None):
+        rgs = RiceGeneScreenResult.objects.get(pk=pk)
+        rgs.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)      
+        
+          
+class FGSResultsList(APIView):
     '''
     All FungaL Gene Screen Results.
     '''
-    fgs_results = FungalGeneScreenResult.objects.all()
-    serializer = FGSSerializer(fgs_results, many=True)
-    return Response(serializer.data)
+    def get(self,request,format=None):
+        fgs_results = FungalGeneScreenResult.objects.all().order_by('pk')
+        serializer = FGSSerializer(fgs_results, many=True)
+        return Response(serializer.data)
+
+    def post(self,request,format=None):
+        print(request.data)
+        new_fgs = {
+            'fungal_gene':request.data.get('fungal_gene'),
+
+            'pcr_results':request.data.get('pcr_results'),
+            'replicate_id':request.data.get('replicate_id'),
+            'sample_id':request.data.get('sample_id'),
+            'reference':request.data.get('reference'),
+        }
+
+        serializer = FGSSerializer(data=new_gene)
+        rice_genotype = None
+
+        if request.data.get('rice_genotype') is not None:
+            rice_genotype = RiceGenotype.objects.get(pk=request.data.get('rice_genotype'))   
+
+        if serializer.is_valid():
+            fgs = serializer.save()
+            fgs.rice_genotype = rice_genotype 
+            fgs.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)  
+        print(serializer.errors)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)  
+
+
+    def put(self,request,format=None):
+        print(request.data)
+        fgs = FungalGeneScreenResult.objects.get(pk=request.data.get('pk'))
+
+
+        if fgs.pcr_results is not request.data.get('pcr_results'):
+            fgs.pcr_results = request.data.get('pcr_results')
+        if fgs.replicate_id is not request.data.get('replicate_id'):
+            fgs.replicate_id = request.data.get('replicate_id')
+        if fgs.sample_id is not request.data.get('sample_id'):
+            fgs.sample_id = request.data.get('sample_id')
+        if fgs.fungal_gene is not request.data.get('fungal_gene'):
+            fgs.fungal_gene = request.data.get('fungal_gene')
+
+        if fgs.rice_genotype is not request.data.get('project') and isinstance(request.data.get('person'),int): ##CHANGE
+            rice_genotype = RiceGenotype.objects.get(pk=request.data.get('rice_genotype'))
+            site.rice_genotype = rice_genotype 
+        fgs.save()    
+        return Response(status=status.HTTP_200_OK)
+
+    def delete(self,request,pk,format=None):
+        fgs = FungalGeneScreenResult.objects.get(pk=pk)
+        fgs.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 
 @api_view(['GET'])
 def pathotyping_results(request):

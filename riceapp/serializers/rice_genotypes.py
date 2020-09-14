@@ -6,5 +6,5 @@ class RiceGenotypeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RiceGenotype
-        fields = ('name','rice_genotype_id','resistance_genes','r_gene_sources',
+        fields = ('pk','name','rice_genotype_id','resistance_genes','r_gene_sources',
                 'susceptible_background','accession_number','pedigree','category' )

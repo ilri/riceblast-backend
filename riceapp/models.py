@@ -114,8 +114,8 @@ class RiceGene(models.Model):
         return self.name
 
 class RiceGeneScreenResult(models.Model):
-    rice_genotype = models.ForeignKey(RiceGenotype, on_delete=models.CASCADE)
-    rice_gene = models.ForeignKey(RiceGene, on_delete=models.CASCADE)
+    rice_genotype = models.ForeignKey(RiceGenotype, on_delete=models.CASCADE,blank=True,null=True)
+    rice_gene = models.ForeignKey(RiceGene, on_delete=models.CASCADE,blank=True,null=True)
     pcr_results = models.CharField(max_length=100) #POSITIVE OR NEGATIVE
     replicate_id = models.CharField(max_length=20) #1,2,3
     sample_id = models.CharField(max_length=100)
