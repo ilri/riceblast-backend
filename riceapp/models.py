@@ -125,7 +125,7 @@ class RiceGeneScreenResult(models.Model):
 
 class FungalGeneScreenResult(models.Model):
     fungal_gene = models.CharField(max_length=255)
-    rice_genotype = models.ForeignKey(RiceGenotype,on_delete=models.CASCADE) 
+    rice_genotype = models.ForeignKey(RiceGenotype,on_delete=models.CASCADE,null=True,blank=True) 
     pcr_results = models.CharField(max_length=100) #POSITIVE OR NEGATIVE
     replicate_id = models.CharField(max_length=20) #1,2,3
     sample_id = models.CharField(max_length=100)
@@ -138,9 +138,9 @@ class PathotypingResults(models.Model):
     replicate_id = models.CharField(max_length=100,blank=True,null=True)
     sample_id = models.CharField(max_length=100,null=True,blank=True)
     stock_id = models.CharField(max_length=100,null=True,blank=True)
-    date_inoculated = models.DateField(null=True,blank=True)
-    date_scored = models.DateField(null=True,blank=True)
-    date_planted = models.DateField(null=True,blank=True)
+    date_inoculated = models.CharField(max_length=100,null=True,blank=True)
+    date_scored = models.CharField(max_length=100,null=True,blank=True)
+    date_planted = models.CharField(max_length=100,null=True,blank=True)
     disease_score = models.IntegerField(blank=True,null=True)
     test = models.CharField(max_length=100,blank=True,null=True)
     tray = models.CharField(max_length=100,blank=True,null=True)
@@ -148,7 +148,6 @@ class PathotypingResults(models.Model):
     isolate = models.ForeignKey(Isolate, on_delete=models.CASCADE,null=True,blank=True)
     person = models.ForeignKey(People,on_delete=models.CASCADE,null=True,blank=True)
     lab = models.ForeignKey(RiceBlastLab, on_delete=models.CASCADE,null=True,blank=True)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE,null=True,blank=True)
 
     class Meta:
         verbose_name_plural = 'Pathotyping Results'

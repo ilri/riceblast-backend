@@ -506,9 +506,18 @@ class RGSResultsList(APIView):
         print(request.data)
         rgs = RiceGeneScreenResult.objects.get(pk=request.data.get('pk'))
 
-        rice_genotype = RiceGenotype.objects.get(pk=request.data.get('rice_genotype'))
-        rice_gene = RiceGene.objects.get(pk=request.data.get('rice_gene'))
+        if( isinstance(request.data.get('rice_genotype'),str)):
+            rice_genotype = RiceGenotype.objects.get(name=request.data.get('rice_genotype'))
+        else:
+            rice_genotype = RiceGenotype.objects.get(pk=request.data.get('rice_genotype'))
+        
 
+        if( isinstance(request.data.get('rice_gene'),str) ):
+            rice_gene = RiceGene.objects.get(name=request.data.get('rice_gene'))
+        else:
+            rice_gene = RiceGene.objects.get(pk=request.data.get('rice_gene'))           
+
+        
 
         if rgs.pcr_results is not request.data.get('pcr_results'):
             rgs.pcr_results = request.data.get('pcr_results')
@@ -549,7 +558,7 @@ class FGSResultsList(APIView):
             'reference':request.data.get('reference'),
         }
 
-        serializer = FGSSerializer(data=new_gene)
+        serializer = FGSSerializer(data=new_fgs)
         rice_genotype = None
 
         if request.data.get('rice_genotype') is not None:
@@ -568,6 +577,10 @@ class FGSResultsList(APIView):
         print(request.data)
         fgs = FungalGeneScreenResult.objects.get(pk=request.data.get('pk'))
 
+        if( isinstance(request.data.get('rice_genotype'),str)):
+            rice_genotype = RiceGenotype.objects.get(name=request.data.get('rice_genotype'))
+        else:
+            rice_genotype = RiceGenotype.objects.get(pk=request.data.get('rice_genotype'))
 
         if fgs.pcr_results is not request.data.get('pcr_results'):
             fgs.pcr_results = request.data.get('pcr_results')
@@ -577,10 +590,9 @@ class FGSResultsList(APIView):
             fgs.sample_id = request.data.get('sample_id')
         if fgs.fungal_gene is not request.data.get('fungal_gene'):
             fgs.fungal_gene = request.data.get('fungal_gene')
+        if fgs.rice_genotype.pk is not request.data.get('rice_genotype'): 
+            fgs.rice_genotype = rice_genotype
 
-        if fgs.rice_genotype is not request.data.get('project') and isinstance(request.data.get('person'),int): ##CHANGE
-            rice_genotype = RiceGenotype.objects.get(pk=request.data.get('rice_genotype'))
-            site.rice_genotype = rice_genotype 
         fgs.save()    
         return Response(status=status.HTTP_200_OK)
 
@@ -589,16 +601,134 @@ class FGSResultsList(APIView):
         fgs.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-
-
-@api_view(['GET'])
-def pathotyping_results(request):
+class PathotypingResultsList(APIView):
     '''
     All Pathotyping Results.
     '''
-    results = PathotypingResults.objects.all()
-    serializer = PathotypingResultsSerializer(results, many=True)
-    return Response(serializer.data)
+    def get(self,request,format=None):
+        results = PathotypingResults.objects.all()
+        serializer = PathotypingResultsSerializer(results, many=True)
+        return Response(serializer.data)
+
+    def post(self,request,format=None):
+        print(request.data)
+
+        addData = {
+            'sample_id':request.data.get('sample_id'),
+
+            'replicate_id':request.data.get('replicate_id'),
+            'stock_id':request.data.get('stock_id'),
+            'date_inoculated':request.data.get('date_inoculated'),
+            'date_scored':request.data.get('date_scored'),
+            'date_planted':request.data.get('date_planted'),
+            'disease_score':request.data.get('disease_score'),
+            'test':request.data.get('test'),
+            'tray':request.data.get('tray'),          
+        }
+
+        serializer = PathotypingResultsSerializer(data=addData)
+        
+        rice_genotype = None
+        isolate = None
+        person = None
+        lab = None
+        project = None        
+
+        if request.data.get('rice_genotype') is not None:
+            rice_genotype = RiceGenotype.objects.get(pk=request.data.get('rice_genotype'))   
+        if request.data.get('isolate') is not None:
+            isolate = Isolate.objects.get(pk=request.data.get('isolate'))  
+        if request.data.get('person') is not None:
+            person = People.objects.get(pk=request.data.get('person'))  
+        if request.data.get('lab') is not None:
+            lab = RiceBlastLab.objects.get(pk=request.data.get('lab'))  
+        if request.data.get('project') is not None:
+            project = Project.objects.get(pk=request.data.get('project'))  
+
+
+        if serializer.is_valid():
+            data = serializer.save()
+
+            data.isolate = isolate 
+            data.person = person 
+            data.lab = lab 
+            data.project = project 
+            data.rice_genotype = rice_genotype
+
+            data.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)  
+        print(serializer.errors)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST) 
+
+    def put(self,request,format=None):
+        print(request.data)
+        data = PathotypingResults.objects.get(pk=request.data.get('pk'))
+
+        if( isinstance(request.data.get('rice_genotype'),str)):
+            rice_genotype = RiceGenotype.objects.get(name=request.data.get('rice_genotype'))
+        else:
+            rice_genotype = RiceGenotype.objects.get(pk=request.data.get('rice_genotype'))
+
+        if( isinstance(request.data.get('isolate'),str)):
+            isolate = Isolate.objects.get(name=request.data.get('isolate'))
+        else:
+            isolate = Isolate.objects.get(pk=request.data.get('isolate'))
+
+        if( isinstance(request.data.get('person'),str)):
+            person = People.objects.get(name=request.data.get('person'))
+        else:
+            person = People.objects.get(pk=request.data.get('person'))
+
+        if( isinstance(request.data.get('lab'),str)):
+            lab = RiceBlastLab.objects.get(name=request.data.get('lab'))
+        else:
+            lab = RiceBlastLab.objects.get(pk=request.data.get('lab'))            
+
+
+
+        if data.stock_id is not request.data.get('stock_id'):
+            data.stock_id = request.data.get('stock_id')
+        if data.replicate_id is not request.data.get('replicate_id'):
+            data.replicate_id = request.data.get('replicate_id')
+        if data.sample_id is not request.data.get('sample_id'):
+            data.sample_id = request.data.get('sample_id')
+        if data.date_inoculated is not request.data.get('date_inoculated'):
+            data.date_inoculated = request.data.get('date_inoculated')
+        if data.date_planted is not request.data.get('date_planted'):
+            data.date_planted = request.data.get('date_planted')
+        if data.date_scored is not request.data.get('date_scored'):
+            data.date_scored = request.data.get('date_scored')
+        if data.disease_score is not request.data.get('disease_score'):
+            data.disease_score = request.data.get('disease_score')                        
+        if data.test is not request.data.get('test'):
+            data.test = request.data.get('test')  
+        if data.tray is not request.data.get('tray'):
+            data.tray = request.data.get('tray')              
+
+
+
+        if data.isolate.pk is not request.data.get('isolate'): 
+            data.isolate = isolate
+        if data.rice_genotype.pk is not request.data.get('isolate'): 
+            data.rice_genotype = rice_genotype
+        if data.person.pk is not request.data.get('person'): 
+            data.person = person
+        if data.lab.pk is not request.data.get('lab'): 
+            data.lab = lab
+        if data.project.pk is not request.data.get('project'): 
+            data.project = project
+                     
+            
+        data.save()    
+        return Response(status=status.HTTP_200_OK)
+
+    def delete(self,request,pk,format=None):
+        data = PathotypingResults.objects.get(pk=pk)
+        data.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
 
 @api_view(['GET'])
 def vcg_groups(request):
