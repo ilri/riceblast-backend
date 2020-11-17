@@ -27,5 +27,5 @@ class RiceSmallSerializer(serializers.ModelSerializer):
     class Meta:
         model = RiceSmallDnaFragmentsSequence
         fields = ['rice_genotype','taxa_name','sequence_id','description','sequence_data',
-                'chromosome_id','chromosome_site_id','loci_id','person','lab','target_gene']
+                'chromosome_id','chromosome_site_id','loci_id','person','lab','target_gene','pk']
         

@@ -5,26 +5,24 @@ from ..models import FungalSmallDnaFragmentsSequence
 class FungalSmallSerializer(serializers.ModelSerializer):
 
     person = serializers.SerializerMethodField()
-    lab = serializers.SerializerMethodField()
-    isolate = serializers.SerializerMethodField()
 
     def get_person(self, fungal_small):
         if fungal_small.person is not None:
             return fungal_small.person.full_name
         return 'Unknown' 
 
-    def get_lab(self, fungal_small):
-        if fungal_small.lab is not None:
-            return fungal_small.lab.lab_name
-        return 'Unknown' 
-
-
-    def get_isolate(self, fungal_small):
-        if fungal_small.isolate is not None:
-            return fungal_small.isolate.isolate_name
-        return 'Unknown'                
-          
     class Meta:
         model = FungalSmallDnaFragmentsSequence
-        fields = ['isolate','taxa_name','sequence_id','description','sequence_data',
-                'chromosome_id','chromosome_site_id','loci_id','person','lab','target_gene']
+        fields = [
+            'pk',
+            'activity_name',
+            'fungal_gene_name',
+            'fungal',
+            'fungal_gene_sequence',
+            'date_of_sequence',
+            'project_name',
+            'loci_id',
+            'person',
+            'target_gene' 
+        ]
+

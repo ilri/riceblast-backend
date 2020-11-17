@@ -22,4 +22,4 @@ class VCGGroupSerializer(serializers.ModelSerializer):
           
     class Meta:
         model = VcgGroup
-        fields = ['vcg_id','group','person','lab']
+        fields = ['pk','vcg_id','group','person','lab']

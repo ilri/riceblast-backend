@@ -7,12 +7,11 @@ class VCGTestResultsSerializer(serializers.ModelSerializer):
     isolate = serializers.SerializerMethodField()
     lab = serializers.SerializerMethodField()
     vcg = serializers.SerializerMethodField()
-    project = serializers.SerializerMethodField()
 
-    def get_project(self, results):
-        if results.project is not None:
-            return results.project.project_name
-        return 'Unknown' 
+    # def get_project(self, results):
+    #     if results.project is not None:
+    #         return results.project.project_name
+    #     return 'Unknown' 
 
     def get_lab(self, results):
         if results.lab is not None:
@@ -33,4 +32,4 @@ class VCGTestResultsSerializer(serializers.ModelSerializer):
     class Meta:
         model = VCGTestResults
         fields = ['vcg_test_id','isolate','vcg_tester_id','tester_and_control','tester_complimented_isolate',
-                'lab','vcg_replicate_id','vcg','project']
+                'lab','vcg_replicate_id','vcg','pk']

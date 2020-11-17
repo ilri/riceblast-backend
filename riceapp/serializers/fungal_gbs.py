@@ -22,4 +22,4 @@ class FungalGBSSerializer(serializers.ModelSerializer):
                     
     class Meta:
         model = FungalGBS
-        fields = ['fungal_gbs_name','person','lab','gbs_dataset']
+        fields = ['fungal_gbs_name','person','lab','gbs_dataset','pk']

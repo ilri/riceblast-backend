@@ -22,4 +22,4 @@ class RiceGBSSerializer(serializers.ModelSerializer):
                     
     class Meta:
         model = RiceGBS
-        fields = ['rice_gbs_name','person','lab','gbs_dataset']
+        fields = ['rice_gbs_name','person','lab','gbs_dataset','pk']

@@ -641,7 +641,7 @@ class PathotypingResultsList(APIView):
         if request.data.get('person') is not None:
             person = People.objects.get(pk=request.data.get('person'))  
         if request.data.get('lab') is not None:
-            lab = RiceBlastLab.objects.get(pk=request.data.get('lab'))  
+            lab = RiceBlastLab.objects.get(pk=request.data.ge/t('lab'))  
         if request.data.get('project') is not None:
             project = Project.objects.get(pk=request.data.get('project'))  
 
@@ -663,26 +663,28 @@ class PathotypingResultsList(APIView):
     def put(self,request,format=None):
         print(request.data)
         data = PathotypingResults.objects.get(pk=request.data.get('pk'))
-
-        if( isinstance(request.data.get('rice_genotype'),str)):
-            rice_genotype = RiceGenotype.objects.get(name=request.data.get('rice_genotype'))
-        else:
+        rice_genotype = None
+        isolate = None
+        person = None
+        lab = None
+        if( isinstance(request.data.get('rice_genotype'),int)):
             rice_genotype = RiceGenotype.objects.get(pk=request.data.get('rice_genotype'))
+            print(rice_genotype)
 
-        if( isinstance(request.data.get('isolate'),str)):
-            isolate = Isolate.objects.get(name=request.data.get('isolate'))
-        else:
+        if( isinstance(request.data.get('isolate'),int)):
             isolate = Isolate.objects.get(pk=request.data.get('isolate'))
+            print(isolate)
 
-        if( isinstance(request.data.get('person'),str)):
-            person = People.objects.get(name=request.data.get('person'))
-        else:
+
+        if( isinstance(request.data.get('person'),int)):
             person = People.objects.get(pk=request.data.get('person'))
+            print(person)
 
-        if( isinstance(request.data.get('lab'),str)):
-            lab = RiceBlastLab.objects.get(name=request.data.get('lab'))
-        else:
-            lab = RiceBlastLab.objects.get(pk=request.data.get('lab'))            
+
+        if( isinstance(request.data.get('lab'),int)):
+            lab = RiceBlastLab.objects.get(pk=request.data.get('lab'))           
+            print(lab)
+
 
 
 
@@ -707,16 +709,15 @@ class PathotypingResultsList(APIView):
 
 
 
-        if data.isolate.pk is not request.data.get('isolate'): 
+        if data.isolate is not request.data.get('isolate') : 
             data.isolate = isolate
-        if data.rice_genotype.pk is not request.data.get('isolate'): 
+        if data.rice_genotype is not request.data.get('rice_genotype'): 
             data.rice_genotype = rice_genotype
-        if data.person.pk is not request.data.get('person'): 
+        if data.person is not request.data.get('person'): 
             data.person = person
-        if data.lab.pk is not request.data.get('lab'): 
+        if data.lab is not request.data.get('lab'): 
             data.lab = lab
-        if data.project.pk is not request.data.get('project'): 
-            data.project = project
+
                      
             
         data.save()    
@@ -727,69 +728,297 @@ class PathotypingResultsList(APIView):
         data.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-
-
-
-@api_view(['GET'])
-def vcg_groups(request):
+class VcgGroupList(APIView):
     '''
     All VCG Groups.
     '''
-    groups = VcgGroup.objects.all()
-    serializer = VCGGroupSerializer(groups, many=True)
-    return Response(serializer.data)
+    def get(self,request,format=None):
+        groups = VcgGroup.objects.all()
+        serializer = VCGGroupSerializer(groups, many=True)
+        return Response(serializer.data)
+    def post(self,request,format=None):
+        print(request.data)
+        addData = {
+            'group':request.data.get('group'),
+            'vcg_id':request.data.get('vcg_id'),     
+        }
 
-@api_view(['GET'])
-def rice_small(request):
+        serializer = VCGGroupSerializer(data=addData)      
+        person = None
+        lab = None  
+
+        if request.data.get('person') is not None:
+            person = People.objects.get(pk=request.data.get('person'))  
+        if request.data.get('lab') is not None:
+            lab = RiceBlastLab.objects.get(pk=request.data.get('lab'))
+        if serializer.is_valid():
+            data = serializer.save()
+
+            data.person = person 
+            data.lab = lab 
+            data.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)  
+        print(serializer.errors)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self,request,format=None):
+        print(request.data)
+        data = VcgGroup.objects.get(pk=request.data.get('pk'))
+        person = None
+        lab = None
+        if( isinstance(request.data.get('person'),int)):
+            person = People.objects.get(pk=request.data.get('person'))
+            print(person)
+
+
+        if( isinstance(request.data.get('lab'),int)):
+            lab = RiceBlastLab.objects.get(pk=request.data.get('lab'))           
+            print(lab)
+
+
+        if( isinstance(request.data.get('person'),int)):
+            person = People.objects.get(pk=request.data.get('person'))
+            print(person)
+
+
+        if( isinstance(request.data.get('lab'),int)):
+            lab = RiceBlastLab.objects.get(pk=request.data.get('lab'))           
+            print(lab)
+
+
+
+
+        if data.group is not request.data.get('group'):
+            data.group = request.data.get('group')
+        if data.vcg_id is not request.data.get('vcg_id'):
+            data.vcg_id = request.data.get('vcg_id')
+
+        if data.person is not request.data.get('person'): 
+            data.person = person
+        if data.lab is not request.data.get('lab'): 
+            data.lab = lab
+        data.save()    
+        return Response(status=status.HTTP_200_OK)
+
+    def delete(self,request,pk,format=None):
+        data = VcgGroup.objects.get(pk=pk)
+        data.delete()        
+        return Response(status=status.HTTP_204_NO_CONTENT)     
+
+
+class RiceSmallList(APIView):
     '''
     All Rice Small DNA Fragments.
     '''
-    rice_small = RiceSmallDnaFragmentsSequence.objects.all()
-    serializer = RiceSmallSerializer(rice_small, many=True)
-    return Response(serializer.data)
+    
+    def get(self,request,format=None):
+        rice_small = RiceSmallDnaFragmentsSequence.objects.all()
+        serializer = RiceSmallSerializer(rice_small, many=True)
+        return Response(serializer.data)
+    def post(self,request,pk,format=None): 
+        print(request.data)   
+        return Response(status=status.HTTP_204_NO_CONTENT)  
+    def put(self,request,pk,format=None):    
+        print(request.data)   
+        return Response(status=status.HTTP_204_NO_CONTENT)                   
+    def delete(self,request,pk,format=None):
+        data = RiceSmallDnaFragmentsSequence.objects.get(pk=pk)
+        data.delete()        
+        return Response(status=status.HTTP_204_NO_CONTENT)   
 
-@api_view(['GET'])
-def fungal_small(request):
+
+
+
+class FungalSmallList(APIView):
     '''
     All Fungal Small DNA Fragments.
     '''
-    fungal_small = FungalSmallDnaFragmentsSequence.objects.all()
-    serializer = FungalSmallSerializer(fungal_small, many=True)
-    return Response(serializer.data)
+    def get(self,request,format=None):
+        fungal_small = FungalSmallDnaFragmentsSequence.objects.all()
+        serializer = FungalSmallSerializer(fungal_small, many=True)
+        return Response(serializer.data)
 
-@api_view(['GET'])
-def vcg_test_results(request):
+    def post(self,request,pk,format=None):    
+        print(request.data)
+        addData = {
+            'activity_name':request.data.get('activity_name'),
+
+            'fungal_gene_name':request.data.get('fungal_gene_name'),
+            'fungal':request.data.get('fungal'),
+            'fungal_gene_sequence':request.data.get('fungal_gene_sequence'),
+            'date_of_sequence':request.data.get('date_of_sequence'),
+            'project_name':request.data.get('project_name'),
+            'loci_id':request.data.get('loci_id'),
+            'target_gene':request.data.get('target_gene'),
+        }       
+        serializer = FungalSmallSerializer(data=addData)
+        person = None
+
+        if request.data.get('person') is not None:
+            person = People.objects.get(pk=request.data.get('person')) 
+
+        if serializer.is_valid():
+            data = serializer.save()
+
+            data.person = person 
+            data.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        print(serializer.errors)
+ 
+        return Response(status=status.HTTP_204_NO_CONTENT)  
+    def put(self,request,pk,format=None):    
+        return Response(status=status.HTTP_204_NO_CONTENT)                   
+    def delete(self,request,pk,format=None):
+        data = FungalSmallDnaFragmentsSequence.objects.get(pk=pk)
+        data.delete()        
+        return Response(status=status.HTTP_204_NO_CONTENT)   
+
+
+class VCGTestResultsList(APIView):
     '''
-    All VCG Test Results.
+    All VCG TEST RESULTS LIST.
     '''
-    results = VCGTestResults.objects.all()
-    serializer = VCGTestResultsSerializer(results, many=True)
-    return Response(serializer.data)
+    def get(self,request,format=None):
+        results = VCGTestResults.objects.all()
+        serializer = VCGTestResultsSerializer(results, many=True)
+        return Response(serializer.data)
+
+    def post(self,request,pk,format=None):   
+        print(request.data)
+        addData = {
+            'vcg_test_id':request.data.get('vcg_test_id'),
+
+            'vcg_tester_id':request.data.get('vcg_tester_id'),
+            'tester_complimented_isolate':request.data.get('tester_complimented_isolate'),
+            'tester_and_control':request.data.get('tester_and_control'),
+            'vcg_replicate_id':request.data.get('vcg_replicate_id'),
+        }
+        serializer = VCGTestResultsSerializer(data=addData)
+        
+        isolate = None
+        lab = None
+        vcg = None        
+
+        if request.data.get('isolate') is not None:
+            isolate = Isolate.objects.get(pk=request.data.get('isolate'))  
+        if request.data.get('lab') is not None:
+            lab = RiceBlastLab.objects.get(pk=request.data.get('lab'))  
+        if request.data.get('vcg') is not None:
+            vcg = VcgGroup.objects.get(pk=request.data.get('vcg'))  
 
 
-@api_view(['GET'])
-def protocol(request):
+        if serializer.is_valid():
+            data = serializer.save()
+
+            data.isolate = isolate 
+            data.lab = lab 
+            data.vcg = vcg 
+
+            data.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)  
+        print(serializer.errors)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self,request,pk,format=None):   
+        print(request.data)
+        data = VCGTestResults.objects.get(pk=request.data.get('pk'))
+        isolate = None
+        vcg = None
+        lab = None
+        if( isinstance(request.data.get('vcg'),int)):
+            vcg = VcgGroup.objects.get(pk=request.data.get('vcg'))
+            print(vcg)
+
+        if( isinstance(request.data.get('isolate'),int)):
+            isolate = Isolate.objects.get(pk=request.data.get('isolate'))
+            print(isolate)
+
+
+        if( isinstance(request.data.get('lab'),int)):
+            lab = RiceBlastLab.objects.get(pk=request.data.get('lab'))           
+            print(lab)
+
+
+
+
+        if data.vcg_test_id is not request.data.get('vcg_test_id'):
+            data.vcg_test_id = request.data.get('vcg_test_id')
+        if data.vcg_tester_id is not request.data.get('vcg_tester_id'):
+            data.vcg_tester_id = request.data.get('vcg_tester_id')
+        if data.tester_complimented_isolate is not request.data.get('tester_complimented_isolate'):
+            data.tester_complimented_isolate = request.data.get('tester_complimented_isolate')
+        if data.tester_and_control is not request.data.get('tester_and_control'):
+            data.tester_and_control = request.data.get('tester_and_control')
+        if data.vcg_replicate_id is not request.data.get('vcg_replicate_id'):
+            data.vcg_replicate_id = request.data.get('vcg_replicate_id')        
+
+        if data.isolate is not request.data.get('isolate'): 
+            data.isolate = isolate
+        if data.vcg is not request.data.get('vcg'): 
+            data.vcg = vcg
+        if data.lab is not request.data.get('lab'): 
+            data.lab = lab     
+        data.save()    
+        return Response(status=status.HTTP_200_OK)
+        
+    def delete(self,request,pk,format=None):
+        data = VCGTestResults.objects.get(pk=pk)
+        data.delete()        
+        return Response(status=status.HTTP_204_NO_CONTENT)   
+
+
+
+
+class ProtocolList(APIView):
     '''
     All Protocols.
     '''
-    protocols = Protocol.objects.all()
-    serializer = ProtocolSerializer(protocols, many=True)
-    return Response(serializer.data)
+    def get(self,request,format=None):
+        results = Protocol.objects.all()
+        serializer = ProtocolSerializer(results, many=True)
+        return Response(serializer.data)
 
-@api_view(['GET'])
-def rice_gbs(request):
+    def post(self,request,pk,format=None):    
+        return Response(status=status.HTTP_204_NO_CONTENT)  
+    def put(self,request,pk,format=None):    
+        return Response(status=status.HTTP_204_NO_CONTENT)                   
+    def delete(self,request,pk,format=None):
+        data = Protocol.objects.get(pk=pk)
+        data.delete()        
+        return Response(status=status.HTTP_204_NO_CONTENT) 
+
+class RiceGBSList(APIView):
     '''
     All Rice GBS.
     '''
-    results = RiceGBS.objects.all()
-    serializer = RiceGBSSerializer(results, many=True)
-    return Response(serializer.data)
 
-@api_view(['GET'])
-def fungal_gbs(request):
+    def get(self,request,format=None):
+        results = RiceGBS.objects.all()
+        serializer = RiceGBSSerializer(results, many=True)
+        return Response(serializer.data)
+    def post(self,request,pk,format=None):    
+        return Response(status=status.HTTP_204_NO_CONTENT)  
+    def put(self,request,pk,format=None):    
+        return Response(status=status.HTTP_204_NO_CONTENT)                   
+    def delete(self,request,pk,format=None):
+        data = RiceGBS.objects.get(pk=pk)
+        data.delete()        
+        return Response(status=status.HTTP_204_NO_CONTENT) 
+
+class FungalGBSList(APIView):
     '''
     All Fungal GBS.
     '''
-    results = FungalGBS.objects.all()
-    serializer = FungalGBSSerializer(results, many=True)
-    return Response(serializer.data)    
+    def get(self,request,format=None):
+        results = FungalGBS.objects.all()
+        serializer = FungalGBSSerializer(results, many=True)
+        return Response(serializer.data)    
+    def post(self,request,pk,format=None):    
+        return Response(status=status.HTTP_204_NO_CONTENT)  
+    def put(self,request,pk,format=None):    
+        return Response(status=status.HTTP_204_NO_CONTENT)                   
+    def delete(self,request,pk,format=None):
+        data = FungalGBS.objects.get(pk=pk)
+        data.delete()        
+        return Response(status=status.HTTP_204_NO_CONTENT) 

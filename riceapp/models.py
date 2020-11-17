@@ -164,20 +164,19 @@ class VcgGroup(models.Model):
         return self.group 
 
 class FungalSmallDnaFragmentsSequence(models.Model):
-    isolate = models.ForeignKey(Isolate, on_delete=models.CASCADE)
-    taxa_name = models.CharField(max_length=200)
-    sequence_id = models.CharField(max_length=100, unique=True) #unique or not?
-    description = models.TextField()
-    sequence_data = models.FileField(upload_to='fungal_sequence_data/') #UPLOAD A FASTA FILE
-    chromosome_id = models.IntegerField()
-    chromosome_site_id = models.CharField(max_length=100)
+    activity_name = models.CharField(max_length=200)
+    fungal_gene_name = models.CharField(max_length=100) #unique or not?
+    fungal = models.TextField()
+    fungal_gene_sequence = models.FileField(upload_to='fungal_gene_sequence/') #UPLOAD A FASTA FILE
+    date_of_sequence = models.DateField()
+    project_name = models.CharField(max_length=100)
     loci_id = models.CharField(max_length=100)
-    person = models.ForeignKey(People, on_delete=models.CASCADE)
-    lab = models.ForeignKey(RiceBlastLab, on_delete=models.CASCADE)
+    person = models.ForeignKey(People, on_delete=models.CASCADE,null=True,blank=True)
     target_gene = models.CharField(max_length=255)
 
+
     def __str__(self):
-        return self.sequence_id 
+        return self.activity_name 
 
 class RiceSmallDnaFragmentsSequence(models.Model):
     rice_genotype = models.ForeignKey(RiceGenotype, on_delete=models.CASCADE)
@@ -197,31 +196,31 @@ class RiceSmallDnaFragmentsSequence(models.Model):
 
 class VCGTestResults(models.Model):
     vcg_test_id = models.CharField(max_length=100, unique=True)
-    isolate = models.ForeignKey(Isolate,on_delete=models.CASCADE)
+    isolate = models.ForeignKey(Isolate,on_delete=models.CASCADE,null=True,blank=True)
     vcg_tester_id = models.CharField(max_length=100)
     tester_complimented_isolate = models.BooleanField()
     tester_and_control = models.BooleanField()
-    lab = models.ForeignKey(RiceBlastLab, on_delete=models.CASCADE)
+    lab = models.ForeignKey(RiceBlastLab, on_delete=models.CASCADE,null=True,blank=True)
     vcg_replicate_id = models.CharField(max_length=100)
-    vcg = models.ForeignKey(VcgGroup, on_delete=models.CASCADE)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    vcg = models.ForeignKey(VcgGroup, on_delete=models.CASCADE,null=True,blank=True)
+    # project = models.ForeignKey(Project, on_delete=models.CASCADE)
     
     def __str__(self):
         return self.vcg_test_id 
 
 class Protocol(models.Model):
     name = models.CharField(max_length=200)
-    protocol_id = models.CharField(max_length=100, unique=True)
-    key_reference = models.CharField(max_length=500)
+    # protocol_id = models.CharField(max_length=100, unique=True)
+    # key_reference = models.CharField(max_length=500)
     protocol = models.FileField(upload_to='protocols/') #UPLOAD FILE
-    person = models.ForeignKey(People, on_delete=models.CASCADE)
-    lab = models.ForeignKey(RiceBlastLab, on_delete=models.CASCADE)
-    protocol_modified = models.DateField()
-    related_protocols = models.CharField(max_length=200)
+    # person = models.ForeignKey(People, on_delete=models.CASCADE)
+    # lab = models.ForeignKey(RiceBlastLab, on_delete=models.CASCADE)
+    # protocol_modified = models.DateField()
+    # related_protocols = models.CharField(max_length=200)
     # country = CountryField(multiple=True)
 
     def __str__(self):
-        return self.protocol_id
+        return self.name
 
 
 class RiceGBS(models.Model):

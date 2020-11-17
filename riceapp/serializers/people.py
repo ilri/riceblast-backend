@@ -25,5 +25,5 @@ class PeopleUserSerializer(serializers.ModelSerializer):
             return person.lab.lab_name
     class Meta:
         model = People
-        fields = ['user','full_name','telephone_number','designation','lab']
+        fields = ['pk','user','full_name','telephone_number','designation','lab']
         
