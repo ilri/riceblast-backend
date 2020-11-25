@@ -45,7 +45,10 @@ urlpatterns = [
     re_path(r'api/register/',views.UserList.as_view()),
     re_path(r'api/user_delete/',views.UserList.as_view()),
     re_path(r'api/people/',views.all_people),
-    re_path(r'api/user_activation/',views.activate_user),
+    re_path(r'api/user_activation/',views.activate_user),    
+    re_path(r'api/download/',views.download_file),
+
+
     # path('api/user_delete/',views.delete_user),
     # path('/api/')
 

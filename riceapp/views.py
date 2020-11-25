@@ -5,7 +5,7 @@ from rest_framework import status,permissions
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import check_password,make_password
 from .serializers.users import UserSerializer,UserSerializerWithToken
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect,HttpResponse
 from rest_framework.views import APIView
 from rest_framework_jwt.serializers import JSONWebTokenSerializer
 from rest_framework_jwt.views import ObtainJSONWebToken
@@ -29,8 +29,9 @@ from .serializers.protocols import ProtocolSerializer
 from .serializers.rice_gbs import RiceGBSSerializer
 from .serializers.fungal_gbs import FungalGBSSerializer
 from django.db.models.functions import Upper
-
-
+import json
+from django.conf import settings
+from wsgiref.util import FileWrapper
 
 
 
@@ -736,8 +737,11 @@ class VcgGroupList(APIView):
         groups = VcgGroup.objects.all()
         serializer = VCGGroupSerializer(groups, many=True)
         return Response(serializer.data)
+
     def post(self,request,format=None):
+
         print(request.data)
+
         addData = {
             'group':request.data.get('group'),
             'vcg_id':request.data.get('vcg_id'),     
@@ -815,9 +819,54 @@ class RiceSmallList(APIView):
         rice_small = RiceSmallDnaFragmentsSequence.objects.all()
         serializer = RiceSmallSerializer(rice_small, many=True)
         return Response(serializer.data)
+
+
     def post(self,request,pk,format=None): 
-        print(request.data)   
-        return Response(status=status.HTTP_204_NO_CONTENT)  
+        request_data = request.data.get('info')
+        info = json.loads(request_data)
+        print(info)
+        file_upload = request.FILES.get('sequence_data')
+        addData = {
+            'taxa_name':info['taxa_name'],
+            'sequence_id':info['sequence_id'],
+            'description':info['description'],
+            'sequence_data':file_upload,
+            'chromosome_id':info['chromosome_id'],
+            'chromosome_site_id':info['chromosome_site_id'],
+            'loci_id':info['loci_id'],
+            'target_gene':info['target_gene'],
+        }   
+            
+        serializer = RiceSmallSerializer(data=addData)
+        person = None
+        rice_genotype = None
+        lab = None
+ 
+        if info['person'] != None and info['person'] != '':
+            person = People.objects.get(pk=info['person']) 
+ 
+        if info['rice_genotype'] != None and info['rice_genotype'] != '':
+            rice_genotype = RiceGenotype.objects.get(pk=info['rice_genotype']) 
+             
+        if info['lab'] != None and info['lab'] != '':
+            lab = RiceBlastLab.objects.get(pk=info['lab']) 
+
+        if serializer.is_valid():
+            data = serializer.save()
+
+            data.person = person 
+            data.rice_genotype = rice_genotype 
+
+            data.lab = lab 
+
+            data.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        print(serializer.errors)
+ 
+        return Response(status=status.HTTP_400_BAD_REQUEST) 
+        print(file_upload)        
+        return Response(status=status.HTTP_400_BAD_REQUEST)  
     def put(self,request,pk,format=None):    
         print(request.data)   
         return Response(status=status.HTTP_204_NO_CONTENT)                   
@@ -839,23 +888,30 @@ class FungalSmallList(APIView):
         return Response(serializer.data)
 
     def post(self,request,pk,format=None):    
-        print(request.data)
-        addData = {
-            'activity_name':request.data.get('activity_name'),
+        # print(request.FILES)
+        # print(request.data.get('info'))
 
-            'fungal_gene_name':request.data.get('fungal_gene_name'),
-            'fungal':request.data.get('fungal'),
-            'fungal_gene_sequence':request.data.get('fungal_gene_sequence'),
-            'date_of_sequence':request.data.get('date_of_sequence'),
-            'project_name':request.data.get('project_name'),
-            'loci_id':request.data.get('loci_id'),
-            'target_gene':request.data.get('target_gene'),
-        }       
+        request_data = request.data.get('info')
+        info = json.loads(request_data)
+        file_upload = request.FILES.get('fungal_gene_sequence')
+        print(file_upload)
+        addData = {
+            'activity_name':info['activity_name'],
+
+            'fungal_gene_name':info['fungal_gene_name'],
+            'fungal':info['fungal'],
+            'fungal_gene_sequence':file_upload,
+            'date_of_sequence':info['date_of_sequence'],
+            'project_name':info['project_name'],
+            'loci_id':info['loci_id'],
+            'target_gene':info['target_gene'],
+        }   
+
         serializer = FungalSmallSerializer(data=addData)
         person = None
-
-        if request.data.get('person') is not None:
-            person = People.objects.get(pk=request.data.get('person')) 
+# 
+        if info['person'] != None and info['person'] != '':
+            person = People.objects.get(pk=info['person']) 
 
         if serializer.is_valid():
             data = serializer.save()
@@ -866,7 +922,7 @@ class FungalSmallList(APIView):
 
         print(serializer.errors)
  
-        return Response(status=status.HTTP_204_NO_CONTENT)  
+        return Response(status=status.HTTP_400_BAD_REQUEST)  
     def put(self,request,pk,format=None):    
         return Response(status=status.HTTP_204_NO_CONTENT)                   
     def delete(self,request,pk,format=None):
@@ -980,7 +1036,28 @@ class ProtocolList(APIView):
         return Response(serializer.data)
 
     def post(self,request,pk,format=None):    
-        return Response(status=status.HTTP_204_NO_CONTENT)  
+
+        request_data = request.data.get('info')
+        info = json.loads(request_data)
+        file_upload = request.FILES.get('protocol')
+        print(file_upload)
+        addData = {
+
+            'name':info['name'],
+            'protocol':file_upload,
+
+        }   
+
+        serializer = ProtocolSerializer(data=addData)
+
+        if serializer.is_valid():
+            data = serializer.save()
+            data.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        print(serializer.errors)
+ 
+        return Response(status=status.HTTP_400_BAD_REQUEST)  
     def put(self,request,pk,format=None):    
         return Response(status=status.HTTP_204_NO_CONTENT)                   
     def delete(self,request,pk,format=None):
@@ -997,8 +1074,37 @@ class RiceGBSList(APIView):
         results = RiceGBS.objects.all()
         serializer = RiceGBSSerializer(results, many=True)
         return Response(serializer.data)
-    def post(self,request,pk,format=None):    
-        return Response(status=status.HTTP_204_NO_CONTENT)  
+    def post(self,request,pk,format=None):
+        request_data = request.data.get('info')
+        info = json.loads(request_data)
+        file_upload = request.FILES.get('gbs_dataset')
+        print(file_upload)
+        addData = {
+
+            'rice_gbs_name':info['rice_gbs_name'],
+            'gbs_dataset':file_upload,
+
+        }   
+
+        serializer = RiceGBSSerializer(data=addData)
+        person = None
+        lab = None
+        if info['person'] != None and info['person'] != '':
+            person = People.objects.get(pk=info['person']) 
+          
+        if info['lab'] != None and info['lab'] != '':
+            lab = RiceBlastLab.objects.get(pk=info['lab'])        
+
+        if serializer.is_valid():
+            data = serializer.save()
+            data.person = person
+            data.lab = lab
+            data.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        print(serializer.errors)
+ 
+        return Response(status=status.HTTP_400_BAD_REQUEST)     
     def put(self,request,pk,format=None):    
         return Response(status=status.HTTP_204_NO_CONTENT)                   
     def delete(self,request,pk,format=None):
@@ -1015,10 +1121,63 @@ class FungalGBSList(APIView):
         serializer = FungalGBSSerializer(results, many=True)
         return Response(serializer.data)    
     def post(self,request,pk,format=None):    
-        return Response(status=status.HTTP_204_NO_CONTENT)  
+        request_data = request.data.get('info')
+        info = json.loads(request_data)
+        file_upload = request.FILES.get('gbs_dataset')
+        print(file_upload)
+        addData = {
+
+            'fungal_gbs_name':info['fungal_gbs_name'],
+            'gbs_dataset':file_upload,
+
+        }   
+
+        serializer = FungalGBSSerializer(data=addData)
+        person = None
+        lab = None
+        if info['person'] != None and info['person'] != '':
+            person = People.objects.get(pk=info['person']) 
+          
+        if info['lab'] != None and info['lab'] != '':
+            lab = RiceBlastLab.objects.get(pk=info['lab'])        
+
+        if serializer.is_valid():
+            data = serializer.save()
+            data.person = person
+            data.lab = lab
+            data.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        print(serializer.errors)
+ 
+        return Response(status=status.HTTP_400_BAD_REQUEST) 
     def put(self,request,pk,format=None):    
         return Response(status=status.HTTP_204_NO_CONTENT)                   
     def delete(self,request,pk,format=None):
         data = FungalGBS.objects.get(pk=pk)
         data.delete()        
         return Response(status=status.HTTP_204_NO_CONTENT) 
+
+@api_view(['GET'])
+def download_file(request):
+
+    '''
+    Download File
+    '''
+    # file_name=request.GET.get('name')
+    # print(request.GET.get('name'))
+# 
+    # the_f = FungalSmallDnaFragmentsSequence.objects.get(pk=1)
+    # print(the_f.fungal_gene_sequence)
+
+    print(request.GET.get('name'))
+    file_name=request.GET.get('name')
+    file_path = settings.BASE_DIR  + file_name
+    with open(file_path,'rb') as download:
+        # red = download.read()
+        response = HttpResponse(FileWrapper(download))
+        response['Content-Disposition'] = 'attachment; filename=NameOfFile'
+        return response
+# 
+        # return Response({'data':fd})
+    return Response(status=status.HTTP_400_BAD_REQUEST)

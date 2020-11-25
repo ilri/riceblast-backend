@@ -133,7 +133,7 @@ class FungalGeneScreenResult(models.Model):
     def __str__(self):
         return self.fungal_gene
 
-
+# UPLOAD
 class PathotypingResults(models.Model):
     replicate_id = models.CharField(max_length=100,blank=True,null=True)
     sample_id = models.CharField(max_length=100,null=True,blank=True)
@@ -162,13 +162,13 @@ class VcgGroup(models.Model):
 
     def __str__(self):
         return self.group 
-
+# FILE
 class FungalSmallDnaFragmentsSequence(models.Model):
     activity_name = models.CharField(max_length=200)
     fungal_gene_name = models.CharField(max_length=100) #unique or not?
     fungal = models.TextField()
-    fungal_gene_sequence = models.FileField(upload_to='fungal_gene_sequence/') #UPLOAD A FASTA FILE
-    date_of_sequence = models.DateField()
+    fungal_gene_sequence = models.FileField(upload_to='FungalSmallDnaFragmentsSequence/fungal_gene_sequence/') #UPLOAD A FASTA FILE
+    date_of_sequence = models.CharField(max_length=200)
     project_name = models.CharField(max_length=100)
     loci_id = models.CharField(max_length=100)
     person = models.ForeignKey(People, on_delete=models.CASCADE,null=True,blank=True)
@@ -177,18 +177,18 @@ class FungalSmallDnaFragmentsSequence(models.Model):
 
     def __str__(self):
         return self.activity_name 
-
+# FILE
 class RiceSmallDnaFragmentsSequence(models.Model):
-    rice_genotype = models.ForeignKey(RiceGenotype, on_delete=models.CASCADE)
+    rice_genotype = models.ForeignKey(RiceGenotype, on_delete=models.CASCADE,null=True,blank=True)
     taxa_name = models.CharField(max_length=200)
     sequence_id = models.CharField(max_length=100, unique=True) #unique or not?
     description = models.TextField()
-    sequence_data = models.FileField(upload_to='rice_sequence_data/') #UPLOAD A FASTA FILE
+    sequence_data = models.FileField(upload_to='RiceSmallDnaFragmentsSequence/rice_sequence_data/') #UPLOAD A FASTA FILE
     chromosome_id = models.IntegerField()
     chromosome_site_id = models.CharField(max_length=100)
     loci_id = models.CharField(max_length=100)
-    person = models.ForeignKey(People, on_delete=models.CASCADE)
-    lab = models.ForeignKey(RiceBlastLab, on_delete=models.CASCADE)
+    person = models.ForeignKey(People, on_delete=models.CASCADE,null=True,blank=True)
+    lab = models.ForeignKey(RiceBlastLab, on_delete=models.CASCADE,null=True,blank=True)
     target_gene = models.CharField(max_length=255)
 
     def __str__(self):
@@ -208,11 +208,14 @@ class VCGTestResults(models.Model):
     def __str__(self):
         return self.vcg_test_id 
 
+
+
+# FILE
 class Protocol(models.Model):
     name = models.CharField(max_length=200)
     # protocol_id = models.CharField(max_length=100, unique=True)
     # key_reference = models.CharField(max_length=500)
-    protocol = models.FileField(upload_to='protocols/') #UPLOAD FILE
+    protocol = models.FileField(upload_to='Protocol/protocols/') #UPLOAD FILE
     # person = models.ForeignKey(People, on_delete=models.CASCADE)
     # lab = models.ForeignKey(RiceBlastLab, on_delete=models.CASCADE)
     # protocol_modified = models.DateField()
@@ -222,21 +225,30 @@ class Protocol(models.Model):
     def __str__(self):
         return self.name
 
-
+# FILE
 class RiceGBS(models.Model):
     rice_gbs_name = models.CharField(max_length=200)
-    person = models.ForeignKey(People,on_delete=models.CASCADE)
-    lab = models.ForeignKey(RiceBlastLab, on_delete=models.CASCADE)
-    gbs_dataset = models.FileField(upload_to='rice_gbs_dataset/') #UPLOAD VCF/HAPMAP FILE
+    person = models.ForeignKey(People,on_delete=models.CASCADE,null=True,blank=True)
+    lab = models.ForeignKey(RiceBlastLab, on_delete=models.CASCADE,null=True,blank=True)
+    gbs_dataset = models.FileField(upload_to='RiceGBS/rice_gbs_dataset/') #UPLOAD VCF/HAPMAP FILE
 
     def __str__(self):
         return self.rice_gbs_name
 
+
+# FILE
 class FungalGBS(models.Model):
     fungal_gbs_name = models.CharField(max_length=200)
-    person = models.ForeignKey(People,on_delete=models.CASCADE)
-    lab = models.ForeignKey(RiceBlastLab, on_delete=models.CASCADE)
-    gbs_dataset = models.FileField(upload_to='fungal_gbs_dataset') #UPLOAD VCF/HAPMAP FILE
+    person = models.ForeignKey(People,on_delete=models.CASCADE,null=True,blank=True)
+    lab = models.ForeignKey(RiceBlastLab, on_delete=models.CASCADE,null=True,blank=True)
+    gbs_dataset = models.FileField(upload_to='FungalGBS/fungal_gbs_dataset/') #UPLOAD VCF/HAPMAP FILE
 
     def __str__(self):
         return self.fungal_gbs_name
+
+class TestFileUpload(models.Model):
+    """
+    Test
+    """
+    # file_test = models.FieldFile(upload_to='test/')      
+    name = models.CharField(max_length=50, blank=True, null=True)  
