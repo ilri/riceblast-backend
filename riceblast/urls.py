@@ -47,6 +47,11 @@ urlpatterns = [
     re_path(r'api/people/',views.all_people),
     re_path(r'api/user_activation/',views.activate_user),    
     re_path(r'api/download/',views.download_file),
+    re_path(r'api/upload_pathotyping_results/',views.upload_pathotypinh_results),
+    re_path(r'api/upload_vcg_test_results/',views.upload_vcg_test_results),
+    re_path(r'api/upload_rice_genes/',views.upload_rice_genes),
+    re_path(r'api/upload_isolates/',views.upload_isolates),
+
 
 
     # path('api/user_delete/',views.delete_user),

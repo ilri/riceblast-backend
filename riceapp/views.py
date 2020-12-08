@@ -33,8 +33,9 @@ import json
 from django.conf import settings
 from wsgiref.util import FileWrapper
 
-
-
+# FOR FILE UPLOAFS
+from .resources import *
+from tablib import Dataset
 
 # Create your views here. 
 
@@ -133,6 +134,7 @@ def current_user(request):
     people_data = People.objects.get(user=request.user.pk)
     serializer = PeopleUser(people_data)
     return Response(serializer.data)        
+
 @api_view(['GET'])
 def all_people(request):
     '''
@@ -345,6 +347,19 @@ class IsolateList(APIView):
         isolate.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+@api_view(['POST'])
+def upload_isolates(request):
+    file_upload = request.FILES.get('isolates')
+    print(file_upload)
+    resource = IsolateResource()
+    dataset = Dataset()
+    imported_data = dataset.load(file_upload.read())
+    result = resource.import_data(dataset, dry_run=True)  # Test the data import   
+
+    if not result.has_errors():
+        resource.import_data(dataset, dry_run=False)  # Actually import now    
+        return Response(status=status.HTTP_200_OK)
+    return Response(status=status.HTTP_400)
 
 
 class RiceGenotypeList(APIView):
@@ -465,6 +480,19 @@ class RiceGenesList(APIView):
         rice_gene.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+@api_view(['POST'])
+def upload_rice_genes(request):
+    file_upload = request.FILES.get('rice_genes')
+    print(file_upload)
+    resource = RiceGeneResource()
+    dataset = Dataset()
+    imported_data = dataset.load(file_upload.read())
+    result = resource.import_data(dataset, dry_run=True)  # Test the data import   
+
+    if not result.has_errors():
+        resource.import_data(dataset, dry_run=False)  # Actually import now    
+        return Response(status=status.HTTP_200_OK)
+    return Response(status=status.HTTP_400)
 
 class RGSResultsList(APIView):
     '''
@@ -728,6 +756,22 @@ class PathotypingResultsList(APIView):
         data = PathotypingResults.objects.get(pk=pk)
         data.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
+@api_view(['POST'])
+def upload_pathotypinh_results(request):
+    file_upload = request.FILES.get('pathotyping_results')
+    print(file_upload)
+    resource = PathotypingResultsResource()
+    dataset = Dataset()
+    imported_data = dataset.load(file_upload.read())
+    result = resource.import_data(dataset, dry_run=True)  # Test the data import   
+
+    if not result.has_errors():
+        resource.import_data(dataset, dry_run=False)  # Actually import now    
+        return Response(status=status.HTTP_200_OK)
+    return Response(status=status.HTTP_400)
 
 class VcgGroupList(APIView):
     '''
@@ -1023,7 +1067,19 @@ class VCGTestResultsList(APIView):
         data.delete()        
         return Response(status=status.HTTP_204_NO_CONTENT)   
 
+@api_view(['POST'])
+def upload_vcg_test_results(request):
+    file_upload = request.FILES.get('vcg_test_results')
+    print(file_upload)
+    resource = VcgTestResultsResource()
+    dataset = Dataset()
+    imported_data = dataset.load(file_upload.read())
+    result = resource.import_data(dataset, dry_run=True)  # Test the data import   
 
+    if not result.has_errors():
+        resource.import_data(dataset, dry_run=False)  # Actually import now    
+        return Response(status=status.HTTP_200_OK)
+    return Response(status=status.HTTP_400)
 
 
 class ProtocolList(APIView):
@@ -1158,6 +1214,8 @@ class FungalGBSList(APIView):
         data.delete()        
         return Response(status=status.HTTP_204_NO_CONTENT) 
 
+
+
 @api_view(['GET'])
 def download_file(request):
 
@@ -1174,8 +1232,9 @@ def download_file(request):
     file_name=request.GET.get('name')
     file_path = settings.BASE_DIR  + file_name
     with open(file_path,'rb') as download:
+        print(download)
         # red = download.read()
-        response = HttpResponse(FileWrapper(download))
+        response = HttpResponse(download.read(), content_type='application/vnd.ms-excel')
         response['Content-Disposition'] = 'attachment; filename=NameOfFile'
         return response
 # 
