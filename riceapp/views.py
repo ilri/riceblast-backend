@@ -333,7 +333,9 @@ class IsolateList(APIView):
         if isolate.country is not request.data.get('country'):
             isolate.country = request.data.get('country') 
         if isolate.host_genotype is not request.data.get('host_genotype'):
-            isolate.host_genotype = request.data.get('host_genotype')                                                   
+            isolate.host_genotype = request.data.get('host_genotype')
+        if isolate.collection_site is not request.data.get('collection_site'):
+            isolate.collection_site = request.data.get('collection_site')                                                                
         if isolate.person is not request.data.get('person') and isinstance(request.data.get('person'),int):
             person = People.objects.get(pk=request.data.get('person'))
             isolate.person = person                        
@@ -443,6 +445,7 @@ class RiceGenesList(APIView):
             'donor_line':request.data.get('donor_line'),
             'resistance_type':request.data.get('resistance_type'),
             'reference':request.data.get('reference'),
+            'project': request.data.get('project'),
         }
         serializer = RiceGenesSerializer(data=new_gene)
               
@@ -471,6 +474,8 @@ class RiceGenesList(APIView):
             rice_gene.resistance_type = request.data.get('resistance_type')
         if rice_gene.reference is not request.data.get('reference'):
             rice_gene.reference = request.data.get('reference')
+        if rice_gene.project is not request.data.get('project'):
+            rice_gene.project = request.data.get('project')
 
         rice_gene.save()    
         return Response(status=status.HTTP_200_OK)
@@ -670,7 +675,7 @@ class PathotypingResultsList(APIView):
         if request.data.get('person') is not None:
             person = People.objects.get(pk=request.data.get('person'))  
         if request.data.get('lab') is not None:
-            lab = RiceBlastLab.objects.get(pk=request.data.ge/t('lab'))  
+            lab = RiceBlastLab.objects.get(pk=request.data.get('lab'))  
         if request.data.get('project') is not None:
             project = Project.objects.get(pk=request.data.get('project'))  
 

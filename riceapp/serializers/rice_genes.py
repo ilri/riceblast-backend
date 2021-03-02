@@ -6,4 +6,4 @@ class RiceGenesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RiceGene
-        fields = ('pk','name','chromosome_id','marker','donor_line','resistance_type','reference')
+        fields = ('pk','name','chromosome_id','marker','donor_line','resistance_type','reference','project')
