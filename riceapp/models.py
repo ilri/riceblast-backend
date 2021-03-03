@@ -94,6 +94,7 @@ class RiceGenotype(models.Model):
     accession_number = models.CharField(max_length=100,blank=True, null=True)
     pedigree = models.TextField(blank=True, null=True)
     category = models.CharField(max_length=50,choices=CATEGORY_CHOICES,blank=True, null=True)
+    project = models.CharField(max_length=200,null=True, blank=True) #CAN BE A FOREIGN KEY TO PROJECT TABLE
 
     def __str__(self):
         return self.name
@@ -113,7 +114,6 @@ class RiceGene(models.Model):
     # donor_line = models.ForeignKey(RiceGenotype, on_delete=models.CASCADE, blank=True, null=True)
     resistance_type = models.CharField(choices=RESISTANCE_CHOICES, max_length=50,null=True,blank=True)
     reference = models.CharField(max_length=200,null=True,blank=True)
-    project = models.CharField(max_length=200,null=True, blank=True) #CAN BE A FOREIGN KEY TO PROJECT TABLE
 
     def __str__(self):
         return self.name

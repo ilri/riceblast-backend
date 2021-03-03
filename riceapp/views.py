@@ -384,6 +384,8 @@ class RiceGenotypeList(APIView):
             'accession_number':request.data.get('accession_number'),
             'pedigree':request.data.get('pedigree'),
             'category':request.data.get('category'),
+            'project': request.data.get('project'),
+
         }
         serializer = RiceGenotypeSerializer(data=new_genotype)
               
@@ -417,6 +419,9 @@ class RiceGenotypeList(APIView):
             rice_genotype.pedigree = request.data.get('pedigree')                                                   
         if rice_genotype.category is not request.data.get('category'):
             rice_genotype.category = request.data.get('category')
+        if rice_genotype.project is not request.data.get('project'):
+            rice_genotype.project = request.data.get('project')
+
         rice_genotype.save()    
         return Response(status=status.HTTP_200_OK)
 
@@ -445,7 +450,6 @@ class RiceGenesList(APIView):
             'donor_line':request.data.get('donor_line'),
             'resistance_type':request.data.get('resistance_type'),
             'reference':request.data.get('reference'),
-            'project': request.data.get('project'),
         }
         serializer = RiceGenesSerializer(data=new_gene)
               
@@ -474,8 +478,7 @@ class RiceGenesList(APIView):
             rice_gene.resistance_type = request.data.get('resistance_type')
         if rice_gene.reference is not request.data.get('reference'):
             rice_gene.reference = request.data.get('reference')
-        if rice_gene.project is not request.data.get('project'):
-            rice_gene.project = request.data.get('project')
+
 
         rice_gene.save()    
         return Response(status=status.HTTP_200_OK)
