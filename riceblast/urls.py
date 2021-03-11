@@ -42,7 +42,7 @@ urlpatterns = [
     re_path(r'api/rice_gbs/(\d*)',views.RiceGBSList.as_view()),
     re_path(r'api/fungal_gbs/(\d*)',views.FungalGBSList.as_view()),
     
-    re_path(r'api/registe/',views.UserList.as_view()),
+    re_path(r'api/register/',views.UserList.as_view()),
     re_path(r'api/user_delete/',views.UserList.as_view()),
     re_path(r'api/people/',views.all_people),
     re_path(r'api/user_activation/',views.activate_user),    

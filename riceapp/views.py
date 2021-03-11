@@ -14,7 +14,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import *
 from .serializers.people import PeopleSerializer,PeopleUserSerializer 
 from .serializers.riceblastlabs import RiceblastlabSerializer
-from .serializers.collectionsites import CollectionSiteSerializer,CollectionSitePostSerializer
+from .serializers.collectionsites import CollectionSiteSerializer
 from .serializers.isolates import IsolateSerializer
 from .serializers.rice_genotypes import RiceGenotypeSerializer
 from .serializers.rice_genes import RiceGenesSerializer
@@ -177,9 +177,10 @@ class RiceBlastLabList(APIView):
         if len(lab_id_exists) == 0:
             if serializer.is_valid():
                 serializer.save()
-            else:        
-                return Response(status=status.HTTP_200_OK)
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            else:
+                print(serializer.errors)        
+                return Response({'message':serializer.errors},status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message':'Lab Created Successfully'},status=status.HTTP_200_OK)
         return Response({'message':'Lab ID already exists'}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     def delete(self,request, pk,format=None):
@@ -229,11 +230,8 @@ class CollectionSiteList(APIView):
             'country':request.data.get('country'),
         }
 
-        serializer = CollectionSitePostSerializer(data=new_site)
+        serializer = CollectionSiteSerializer(data=new_site)
 
-        project = None
-        if request.data.get('project') is not None:
-            project = Project.objects.get(pk=request.data.get('project'))
 
         person = None
         if request.data.get('person') is not None:
@@ -263,9 +261,6 @@ class CollectionSiteList(APIView):
             site.latitude = request.data.get('latitude')  
         if site.country is not request.data.get('country'):
             site.country = request.data.get('country')                                                
-        if site.project is not request.data.get('project') and isinstance(request.data.get('person'),int):
-            project = Project.objects.get(pk=request.data.get('project'))
-            site.project = project 
         if site.person is not request.data.get('person') and isinstance(request.data.get('person'),int):
             person = People.objects.get(pk=request.data.get('person'))
             site.person = person                        
@@ -446,7 +441,8 @@ class RiceGenesList(APIView):
         new_gene = {
             'name':request.data.get('name'),
             'chromosome_id':request.data.get('chromosome_id'),
-            'marker':request.data.get('marker'),
+            'marker_type':request.data.get('marker_type'),
+            'marker_name':request.data.get('marker_name'),
             'donor_line':request.data.get('donor_line'),
             'resistance_type':request.data.get('resistance_type'),
             'reference':request.data.get('reference'),
@@ -470,8 +466,10 @@ class RiceGenesList(APIView):
             rice_gene.name = request.data.get('name')
         if rice_gene.chromosome_id is not request.data.get('chromosome_id'):
             rice_gene.chromosome_id = request.data.get('chromosome_id')
-        if rice_gene.marker is not request.data.get('marker'):
-            rice_gene.marker = request.data.get('marker')
+        if rice_gene.marker_type is not request.data.get('marker_type'):
+            rice_gene.marker_type = request.data.get('marker_type')
+        if rice_gene.marker_name is not request.data.get('marker_name'):
+            rice_gene.marker_name = request.data.get('marker_name')
         if rice_gene.donor_line is not request.data.get('donor_line'):
             rice_gene.donor_line = request.data.get('donor_line')
         if rice_gene.resistance_type is not request.data.get('resistance_type'):

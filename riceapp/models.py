@@ -52,7 +52,7 @@ class FungalCollectionSite(models.Model):
     latitude = models.DecimalField(default=0.0000,max_digits=6, decimal_places=4)
     longitude = models.DecimalField(default=0.0000,max_digits=6, decimal_places=4)
     country = CountryField(default='KE')
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, blank=True)
+    # project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, blank=True)
     person = models.ForeignKey(People, on_delete=models.CASCADE, related_name='field_person',null=True,blank=True)
 
     
@@ -109,7 +109,8 @@ class RiceGene(models.Model):
     ]
     name = models.CharField(max_length=100,blank=True,null=True)
     chromosome_id = models.IntegerField(null=True,blank=True)
-    marker = models.CharField(max_length=100,null=True,blank=True)
+    marker_type = models.CharField(max_length=100,null=True,blank=True)
+    marker_name = models.CharField(max_length=100,null=True,blank=True)
     donor_line = models.CharField(max_length=255,null=True,blank=True)
     # donor_line = models.ForeignKey(RiceGenotype, on_delete=models.CASCADE, blank=True, null=True)
     resistance_type = models.CharField(choices=RESISTANCE_CHOICES, max_length=50,null=True,blank=True)
