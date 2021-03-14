@@ -101,6 +101,11 @@ admin.site.register(RiceSmallDnaFragmentsSequence)
 admin.site.register(FungalGBS)
 admin.site.register(FungalGeneScreenResult)
 admin.site.register(Project)
+admin.site.register(Publications)
+admin.site.register(Newsletters)
+admin.site.register(Minutes)
+admin.site.register(Outreach)
+
 
 
 

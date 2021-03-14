@@ -41,12 +41,17 @@ urlpatterns = [
     re_path(r'api/protocol/(\d*)',views.ProtocolList.as_view()),
     re_path(r'api/rice_gbs/(\d*)',views.RiceGBSList.as_view()),
     re_path(r'api/fungal_gbs/(\d*)',views.FungalGBSList.as_view()),
+    re_path(r'api/publications/(\d*)',views.PublicationsList.as_view()),
+    re_path(r'api/newsletter/(\d*)',views.NewslettersList.as_view()),
+    re_path(r'api/meetings/(\d*)',views.MeetingsList.as_view()),
+    re_path(r'api/outreach/(\d*)',views.OutreachList.as_view()),
+
     
     re_path(r'api/register/',views.UserList.as_view()),
     re_path(r'api/user_delete/',views.UserList.as_view()),
     re_path(r'api/people/',views.all_people),
     re_path(r'api/user_activation/',views.activate_user),    
-    re_path(r'api/download/',views.download_file),
+    path('api/download/',views.download_file),
     re_path(r'api/upload_pathotyping_results/',views.upload_pathotypinh_results),
     re_path(r'api/upload_vcg_test_results/',views.upload_vcg_test_results),
     re_path(r'api/upload_rice_genes/',views.upload_rice_genes),

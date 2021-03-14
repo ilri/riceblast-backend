@@ -57,20 +57,21 @@ class RiceGenotypeResource(resources.ModelResource):
 class PathotypingResultsResource(resources.ModelResource):
     class Meta:
         model = PathotypingResults
-    
+   
     def before_import(self,dataset, using_transactions, dry_run, **kwargs):
         for i,header in enumerate(dataset.headers):
             dataset.headers[i] = header.lower()
     def before_import_row(self,row,**kwargs):
-        try:
-            isolate = Isolate.objects.get(isolate_id=row['isolate'])          
+        isolate = Isolate.objects.filter(isolate_id=row['isolate']).first()
+        if isolate != None:
             row['isolate'] = isolate.pk
-        except Isolate.DoesNotExist:
+        else:
             row['isolate'] = None
         
-        try:
-            RiceGenotype.objects.get(pk=row['rice_genotype'])
-        except RiceGenotype.DoesNotExist:
+        rice_genotype = RiceGenotype.objects.filter(name=row['rice_genotype']).first()
+        if rice_genotype != None:            
+            row['rice_genotype'] = rice_genotype.pk
+        else:
             row['rice_genotype'] = None
 
         

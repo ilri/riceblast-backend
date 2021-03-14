@@ -12,6 +12,7 @@ from rest_framework_jwt.views import ObtainJSONWebToken
 from rest_framework_jwt.settings import api_settings
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import *
+from .serializers.publications import PublicationSerializer
 from .serializers.people import PeopleSerializer,PeopleUserSerializer 
 from .serializers.riceblastlabs import RiceblastlabSerializer
 from .serializers.collectionsites import CollectionSiteSerializer
@@ -28,6 +29,10 @@ from .serializers.vcg_test_results import VCGTestResultsSerializer
 from .serializers.protocols import ProtocolSerializer
 from .serializers.rice_gbs import RiceGBSSerializer
 from .serializers.fungal_gbs import FungalGBSSerializer
+from .serializers.newsletter import NewsletterSerializer
+from .serializers.minutes import MeetingsSerializer
+from .serializers.outreach import OutreachSerializer
+
 from django.db.models.functions import Upper
 import json
 from django.conf import settings
@@ -37,7 +42,161 @@ from wsgiref.util import FileWrapper
 from .resources import *
 from tablib import Dataset
 
+
+
+
+
 # Create your views here. 
+class PublicationsList(APIView):
+    '''API View for Publications'''
+
+    def get(self,request,format=None):
+        publications = Publications.objects.all().order_by('pk')
+        serializer = PublicationSerializer(publications, many=True)
+        return Response(serializer.data)         
+  
+    def post(self,request,pk,format=None):    
+        request_data = request.data.get('info')
+        info = json.loads(request_data)
+        file_upload = request.FILES.get('publication')
+        print(file_upload)
+        addData = {
+
+            'title':info['title'],
+            'date':info['date'],
+            'description':info['description'],
+            'publication':file_upload,
+
+        }   
+
+        serializer = PublicationSerializer(data=addData)
+     
+
+        if serializer.is_valid():
+            data = serializer.save()
+            data.save()
+            return Response({"message":'SUCCESSFUL'},status=status.HTTP_201_CREATED)
+
+        print(serializer.errors)
+ 
+        return Response({"message":serializer.errors},status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self,request,pk,format=None):
+        data = Publications.objects.get(pk=pk)
+        data.delete()        
+        return Response(status=status.HTTP_204_NO_CONTENT) 
+        
+class NewslettersList(APIView):
+    '''API View for Newsletters'''
+
+    def get(self,request,format=None):
+        newsletters = Newsletters.objects.all().order_by('pk')
+        serializer = NewsletterSerializer(newsletters, many=True)
+        return Response(serializer.data)         
+  
+    def post(self,request,pk,format=None):    
+        request_data = request.data.get('info')
+        info = json.loads(request_data)
+        file_upload = request.FILES.get('newsletter')
+        print(file_upload)
+        addData = {
+
+            'title':info['title'],
+            'date':info['date'],
+            'description':info['description'],
+            'newsletter':file_upload,
+
+        }   
+
+        serializer = NewsletterSerializer(data=addData)
+     
+
+        if serializer.is_valid():
+            data = serializer.save()
+            data.save()
+            return Response({"message":'SUCCESSFUL'},status=status.HTTP_201_CREATED)
+
+        print(serializer.errors)
+ 
+        return Response({"message":serializer.errors},status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self,request,pk,format=None):
+        data = Newsletters.objects.get(pk=pk)
+        data.delete()        
+        return Response(status=status.HTTP_204_NO_CONTENT) 
+
+class MeetingsList(APIView):
+    '''API View for Meetings'''
+
+    def get(self,request,format=None):
+        minutes = Minutes.objects.all().order_by('pk')
+        serializer = MeetingsSerializer(minutes, many=True)
+        return Response(serializer.data)         
+  
+    def post(self,request,pk,format=None):    
+        request_data = request.data.get('info')
+        info = json.loads(request_data)
+        file_upload = request.FILES.get('minutes')
+        print(file_upload)
+        addData = {
+            'title':info['title'],
+            'date':info['date'],
+            'minutes':file_upload,
+        }   
+
+        serializer = MeetingsSerializer(data=addData)
+     
+
+        if serializer.is_valid():
+            data = serializer.save()
+            data.save()
+            return Response({"message":'SUCCESSFUL'},status=status.HTTP_201_CREATED)
+
+        print(serializer.errors)
+ 
+        return Response({"message":serializer.errors},status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self,request,pk,format=None):
+        data = Minutes.objects.get(pk=pk)
+        data.delete()        
+        return Response(status=status.HTTP_204_NO_CONTENT) 
+
+class OutreachList(APIView):
+    '''API View for Outreach'''
+
+    def get(self,request,format=None):
+        all_outreach = Outreach.objects.all().order_by('pk')
+        serializer = OutreachSerializer(all_outreach, many=True)
+        return Response(serializer.data)         
+  
+    def post(self,request,pk,format=None):    
+        request_data = request.data.get('info')
+        info = json.loads(request_data)
+        file_upload = request.FILES.get('image')
+        print(file_upload)
+        addData = {
+            'outreach':info['outreach'],
+            'date':info['date'],
+            'brief':info['brief'],
+            'image':file_upload,
+        }   
+
+        serializer = OutreachSerializer(data=addData)
+     
+
+        if serializer.is_valid():
+            data = serializer.save()
+            data.save()
+            return Response({"message":'SUCCESSFUL'},status=status.HTTP_201_CREATED)
+
+        print(serializer.errors)
+ 
+        return Response({"message":serializer.errors},status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self,request,pk,format=None):
+        data = Outreach.objects.get(pk=pk)
+        data.delete()        
+        return Response(status=status.HTTP_204_NO_CONTENT) 
 
 
 class CustomJWTSerializer(TokenObtainPairSerializer):
@@ -76,8 +235,8 @@ class UserList(APIView):
         # CHECK IF CREDENTIALS EXIST
         check_username = User.objects.filter(username=user_info['username'])
         check_email = User.objects.filter(email=user_info['email'])
-        if len(check_username) is 0:
-            if len(check_email) is 0:
+        if len(check_username) == 0:
+            if len(check_email) == 0:
                 if user_serializer.is_valid():
                     user = user_serializer.save()
                     people_info['user'] = user.pk
@@ -772,12 +931,13 @@ def upload_pathotypinh_results(request):
     resource = PathotypingResultsResource()
     dataset = Dataset()
     imported_data = dataset.load(file_upload.read())
-    result = resource.import_data(dataset, dry_run=True)  # Test the data import   
+    result = resource.import_data(imported_data, dry_run=True)  # Test the data import   
 
     if not result.has_errors():
         resource.import_data(dataset, dry_run=False)  # Actually import now    
         return Response(status=status.HTTP_200_OK)
-    return Response(status=status.HTTP_400)
+    print(result.row_errors)
+    return Response(status=status.HTTP_400_BAD_REQUEST)
 
 class VcgGroupList(APIView):
     '''
@@ -1222,27 +1382,25 @@ class FungalGBSList(APIView):
 
 
 
+
+from django.core.files import File
+from django.http import HttpResponse
+from rest_framework.decorators import api_view
+from riceblast.settings import BASE_DIR, MEDIA_ROOT
+
 @api_view(['GET'])
 def download_file(request):
 
     '''
     Download File
     '''
-    # file_name=request.GET.get('name')
-    # print(request.GET.get('name'))
-# 
-    # the_f = FungalSmallDnaFragmentsSequence.objects.get(pk=1)
-    # print(the_f.fungal_gene_sequence)
 
-    print(request.GET.get('name'))
-    file_name=request.GET.get('name')
-    file_path = settings.BASE_DIR  + file_name
-    with open(file_path,'rb') as download:
-        print(download)
-        # red = download.read()
-        response = HttpResponse(download.read(), content_type='application/vnd.ms-excel')
-        response['Content-Disposition'] = 'attachment; filename=NameOfFile'
-        return response
-# 
-        # return Response({'data':fd})
-    return Response(status=status.HTTP_400_BAD_REQUEST)
+    print(request.GET.get('path'))
+    
+    path = request.GET.get('path')
+    path_to_file = MEDIA_ROOT + path
+    f = open(path_to_file, 'rb')
+    pdfFile = File(f)
+    response = HttpResponse(pdfFile.read())
+    response['Content-Disposition'] = 'attachment'
+    return response

@@ -8,6 +8,63 @@ from django_countries.fields import CountryField
 
     
 # Create your models here.
+
+
+class Publications(models.Model):
+    '''Model class for Publications'''
+    title=models.CharField(max_length=100)
+    date=models.CharField(max_length=100)
+    description=models.TextField()
+    publication=models.FileField(upload_to='Publications/publication')
+
+    class Meta:
+        verbose_name_plural = 'Publications'
+
+        
+    def __str__(self):
+        return self.title
+
+class Newsletters(models.Model):
+    '''Model class for Newsletters'''
+    title=models.CharField(max_length=100)
+    date=models.CharField(max_length=100)
+    description=models.TextField()
+    newsletter=models.FileField(upload_to='Newsletters/newsletter')
+
+    class Meta:
+        verbose_name_plural = 'Newsletters'
+
+        
+    def __str__(self):
+        return self.title
+
+class Minutes(models.Model):
+    '''Model class for Minutes'''
+    title=models.CharField(max_length=100)
+    date=models.CharField(max_length=100)
+    minutes=models.FileField(upload_to='Minutes/minutes')
+
+    class Meta:
+        verbose_name_plural = 'Minutes'
+
+        
+    def __str__(self):
+        return self.title
+
+class Outreach(models.Model):
+    '''Model class for Outreach'''
+    outreach=models.CharField(max_length=100)
+    date=models.CharField(max_length=100)
+    brief=models.TextField()
+    image=models.ImageField(upload_to='Outreach/images')
+
+    class Meta:
+        verbose_name_plural = 'Outreach'
+
+        
+    def __str__(self):
+        return self.outreach
+
 class RiceBlastLab(models.Model):
     ''' Model class for Rice Blast Labs '''
     lab_id = models.CharField(max_length=100, unique=True)
