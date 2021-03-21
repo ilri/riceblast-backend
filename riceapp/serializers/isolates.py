@@ -22,6 +22,6 @@ class IsolateSerializer(serializers.ModelSerializer):
         return ''
     class Meta:
         model = Isolate
-        fields = ('pk','isolate_id', 'isolate_name','taxa_name','tissue_type',
+        fields = ('pk','isolate_id', 'isolate_name','tissue_type',
                 'date_collected','date_collected','date_isolated', 'country', 
                 'host_genotype', 'collection_site' ,'person')

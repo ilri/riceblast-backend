@@ -12,7 +12,7 @@ from django_countries.fields import CountryField
 
 class Publications(models.Model):
     '''Model class for Publications'''
-    title=models.CharField(max_length=100)
+    title=models.TextField()
     date=models.CharField(max_length=100)
     description=models.TextField()
     publication=models.FileField(upload_to='Publications/publication')
@@ -26,7 +26,7 @@ class Publications(models.Model):
 
 class Newsletters(models.Model):
     '''Model class for Newsletters'''
-    title=models.CharField(max_length=100)
+    title=models.TextField()
     date=models.CharField(max_length=100)
     description=models.TextField()
     newsletter=models.FileField(upload_to='Newsletters/newsletter')
@@ -40,7 +40,7 @@ class Newsletters(models.Model):
 
 class Minutes(models.Model):
     '''Model class for Minutes'''
-    title=models.CharField(max_length=100)
+    title=models.TextField()
     date=models.CharField(max_length=100)
     minutes=models.FileField(upload_to='Minutes/minutes')
 
@@ -53,7 +53,7 @@ class Minutes(models.Model):
 
 class Outreach(models.Model):
     '''Model class for Outreach'''
-    outreach=models.CharField(max_length=100)
+    outreach=models.TextField()
     date=models.CharField(max_length=100)
     brief=models.TextField()
     image=models.ImageField(upload_to='Outreach/images')
@@ -120,7 +120,7 @@ class Isolate(models.Model):
     '''Model class for lab isolates '''
     isolate_id = models.CharField(max_length=100)
     isolate_name = models.CharField(max_length=200,null=True,blank=True)
-    taxa_name = models.CharField(max_length=200,blank=True,null=True)
+    # taxa_name = models.CharField(max_length=200,blank=True,null=True)
     tissue_type = models.CharField(max_length=100,null=True,blank=True)
     date_collected = models.CharField(max_length=100,blank=True,null=True)
     date_isolated = models.CharField(max_length=100,null=True,blank=True)

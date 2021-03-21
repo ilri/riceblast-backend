@@ -49,6 +49,7 @@ from tablib import Dataset
 # Create your views here. 
 class PublicationsList(APIView):
     '''API View for Publications'''
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly,]
 
     def get(self,request,format=None):
         publications = Publications.objects.all().order_by('pk')
@@ -340,7 +341,7 @@ class RiceBlastLabList(APIView):
                 print(serializer.errors)        
                 return Response({'message':serializer.errors},status=status.HTTP_400_BAD_REQUEST)
             return Response({'message':'Lab Created Successfully'},status=status.HTTP_200_OK)
-        return Response({'message':'Lab ID already exists'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+        return Response({'message':{'lab_id':'Lab ID already exists'}}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     def delete(self,request, pk,format=None):
         print(pk)
@@ -445,7 +446,6 @@ class IsolateList(APIView):
         new_isolate = {
             'isolate_id':request.data.get('isolate_id'),
             'isolate_name':request.data.get('isolate_name'),
-            'taxa_name':request.data.get('taxa_name'),
             'date_collected':request.data.get('date_collected'),
             'date_isolated':request.data.get('date_isolated'),
             'country':request.data.get('country'),
@@ -474,8 +474,6 @@ class IsolateList(APIView):
             isolate.isolate_id = request.data.get('isolate_id')
         if isolate.isolate_name is not request.data.get('isolate_name'):
             isolate.isolate_name = request.data.get('isolate_name')
-        if isolate.taxa_name is not request.data.get('taxa_name'):
-            isolate.taxa_name = request.data.get('taxa_name')
         if isolate.tissue_type is not request.data.get('tissue_type'):
             isolate.tissue_type = request.data.get('tissue_type') 
         if isolate.date_collected is not request.data.get('date_collected'):
@@ -731,7 +729,21 @@ class RGSResultsList(APIView):
         rgs.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)      
         
-          
+@api_view(['POST'])
+def upload_rgs_results(request):
+    file_upload = request.FILES.get('rgs_results')
+    print(file_upload)
+    resource = RGSResultsResource()
+    dataset = Dataset()
+    imported_data = dataset.load(file_upload.read())
+    result = resource.import_data(imported_data, dry_run=True)  # Test the data import   
+
+    if not result.has_errors():
+        resource.import_data(dataset, dry_run=False)  # Actually import now    
+        return Response({'message':'SUCCESS'},status=status.HTTP_200_OK)
+    print(result.row_errors)
+    return Response({'message':'FAILURE: CHECK FILE'},status=status.HTTP_400_BAD_REQUEST)
+
 class FGSResultsList(APIView):
     '''
     All FungaL Gene Screen Results.
@@ -806,10 +818,9 @@ class PathotypingResultsList(APIView):
 
     def post(self,request,format=None):
         print(request.data)
-
+ 
         addData = {
             'sample_id':request.data.get('sample_id'),
-
             'replicate_id':request.data.get('replicate_id'),
             'stock_id':request.data.get('stock_id'),
             'date_inoculated':request.data.get('date_inoculated'),
@@ -819,15 +830,15 @@ class PathotypingResultsList(APIView):
             'test':request.data.get('test'),
             'tray':request.data.get('tray'),          
         }
-
+ 
         serializer = PathotypingResultsSerializer(data=addData)
-        
+        # 
         rice_genotype = None
         isolate = None
         person = None
         lab = None
         project = None        
-
+ 
         if request.data.get('rice_genotype') is not None:
             rice_genotype = RiceGenotype.objects.get(pk=request.data.get('rice_genotype'))   
         if request.data.get('isolate') is not None:
@@ -838,22 +849,20 @@ class PathotypingResultsList(APIView):
             lab = RiceBlastLab.objects.get(pk=request.data.get('lab'))  
         if request.data.get('project') is not None:
             project = Project.objects.get(pk=request.data.get('project'))  
-
-
+ 
+ 
         if serializer.is_valid():
             data = serializer.save()
-
             data.isolate = isolate 
             data.person = person 
             data.lab = lab 
             data.project = project 
             data.rice_genotype = rice_genotype
-
             data.save()
             return Response(status=status.HTTP_204_NO_CONTENT)  
         print(serializer.errors)
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST) 
-
+ 
     def put(self,request,format=None):
         print(request.data)
         data = PathotypingResults.objects.get(pk=request.data.get('pk'))
@@ -864,24 +873,24 @@ class PathotypingResultsList(APIView):
         if( isinstance(request.data.get('rice_genotype'),int)):
             rice_genotype = RiceGenotype.objects.get(pk=request.data.get('rice_genotype'))
             print(rice_genotype)
-
+ 
         if( isinstance(request.data.get('isolate'),int)):
             isolate = Isolate.objects.get(pk=request.data.get('isolate'))
             print(isolate)
-
-
+ 
+ 
         if( isinstance(request.data.get('person'),int)):
             person = People.objects.get(pk=request.data.get('person'))
             print(person)
-
-
+ 
+ 
         if( isinstance(request.data.get('lab'),int)):
             lab = RiceBlastLab.objects.get(pk=request.data.get('lab'))           
             print(lab)
-
-
-
-
+ 
+ 
+ 
+ 
         if data.stock_id is not request.data.get('stock_id'):
             data.stock_id = request.data.get('stock_id')
         if data.replicate_id is not request.data.get('replicate_id'):
@@ -900,8 +909,8 @@ class PathotypingResultsList(APIView):
             data.test = request.data.get('test')  
         if data.tray is not request.data.get('tray'):
             data.tray = request.data.get('tray')              
-
-
+ 
+ 
 
         if data.isolate is not request.data.get('isolate') : 
             data.isolate = isolate
@@ -911,12 +920,9 @@ class PathotypingResultsList(APIView):
             data.person = person
         if data.lab is not request.data.get('lab'): 
             data.lab = lab
-
-                     
-            
         data.save()    
         return Response(status=status.HTTP_200_OK)
-
+ 
     def delete(self,request,pk,format=None):
         data = PathotypingResults.objects.get(pk=pk)
         data.delete()
@@ -935,9 +941,9 @@ def upload_pathotypinh_results(request):
 
     if not result.has_errors():
         resource.import_data(dataset, dry_run=False)  # Actually import now    
-        return Response(status=status.HTTP_200_OK)
+        return Response({'message':'SUCCESS'},status=status.HTTP_200_OK)
     print(result.row_errors)
-    return Response(status=status.HTTP_400_BAD_REQUEST)
+    return Response({'message':'FAILURE: CHECK FILE'},status=status.HTTP_400_BAD_REQUEST)
 
 class VcgGroupList(APIView):
     '''
@@ -1119,7 +1125,7 @@ class FungalSmallList(APIView):
 
         serializer = FungalSmallSerializer(data=addData)
         person = None
-# 
+ 
         if info['person'] != None and info['person'] != '':
             person = People.objects.get(pk=info['person']) 
 

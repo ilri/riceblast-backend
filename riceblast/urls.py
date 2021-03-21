@@ -56,6 +56,8 @@ urlpatterns = [
     re_path(r'api/upload_vcg_test_results/',views.upload_vcg_test_results),
     re_path(r'api/upload_rice_genes/',views.upload_rice_genes),
     re_path(r'api/upload_isolates/',views.upload_isolates),
+    re_path(r'api/upload_rgs/',views.upload_rgs_results),
+
 
 
 

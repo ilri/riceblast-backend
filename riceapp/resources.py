@@ -73,7 +73,7 @@ class PathotypingResultsResource(resources.ModelResource):
             row['rice_genotype'] = rice_genotype.pk
         else:
             row['rice_genotype'] = None
-
+# 
         
 
 
@@ -93,3 +93,24 @@ class RiceGeneResource(resources.ModelResource):
     # def before_import_row(self,row,**kwargs):
         # donor_line = self.request.POST.get('donor_line')
         # row['donor_line'] = donor_line 
+
+
+class RGSResultsResource(resources.ModelResource):
+    class Meta:
+        model = RiceGeneScreenResult
+   
+    def before_import(self,dataset, using_transactions, dry_run, **kwargs):
+        for i,header in enumerate(dataset.headers):
+            dataset.headers[i] = header.lower()
+    def before_import_row(self,row,**kwargs):
+        rice_gene = RiceGene.objects.filter(name=row['rice_gene']).first()
+        if rice_gene != None:
+            row['rice_gene'] = rice_gene.pk
+        else:
+            row['rice_gene'] = None
+        
+        rice_genotype = RiceGenotype.objects.filter(name=row['rice_genotype']).first()
+        if rice_genotype != None:            
+            row['rice_genotype'] = rice_genotype.pk
+        else:
+            row['rice_genotype'] = None
