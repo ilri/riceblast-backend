@@ -73,8 +73,18 @@ class PathotypingResultsResource(resources.ModelResource):
             row['rice_genotype'] = rice_genotype.pk
         else:
             row['rice_genotype'] = None
-# 
-        
+
+        person = People.objects.filter(full_name=row['person']).first()
+        if person != None:            
+            row['person'] = person.pk
+        else:
+            row['person'] = None 
+
+        lab = RiceBlastLab.objects.filter(lab_name=row['lab']).first()
+        if lab != None:            
+            row['lab'] = lab.pk
+        else:
+            row['lab'] = None         
 
 
 class RiceGeneResource(resources.ModelResource):

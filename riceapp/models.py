@@ -56,7 +56,8 @@ class Outreach(models.Model):
     outreach=models.TextField()
     date=models.CharField(max_length=100)
     brief=models.TextField()
-    image=models.ImageField(upload_to='Outreach/images')
+    image=models.ImageField(upload_to='Outreach/images', blank=True)
+    outreach_file=models.FileField(upload_to='Outreach/outreach',blank=True,null=True)
 
     class Meta:
         verbose_name_plural = 'Outreach'
@@ -205,7 +206,7 @@ class PathotypingResults(models.Model):
     date_scored = models.CharField(max_length=100,null=True,blank=True)
     date_planted = models.CharField(max_length=100,null=True,blank=True)
     disease_score = models.IntegerField(blank=True,null=True)
-    test = models.CharField(max_length=100,blank=True,null=True)
+    test = models.IntegerField(blank=True,null=True)
     tray = models.CharField(max_length=100,blank=True,null=True)
     rice_genotype = models.ForeignKey(RiceGenotype, on_delete=models.CASCADE,null=True,blank=True)
     isolate = models.ForeignKey(Isolate, on_delete=models.CASCADE,null=True,blank=True)

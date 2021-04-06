@@ -173,13 +173,14 @@ class OutreachList(APIView):
     def post(self,request,pk,format=None):    
         request_data = request.data.get('info')
         info = json.loads(request_data)
-        file_upload = request.FILES.get('image')
-        print(file_upload)
+        image_file_upload = request.FILES.get('image')
+        outreach_file_upload=request.FILES.get('outreach_file')
         addData = {
             'outreach':info['outreach'],
             'date':info['date'],
             'brief':info['brief'],
-            'image':file_upload,
+            'image':image_file_upload,
+            'outreach_file':outreach_file_upload,
         }   
 
         serializer = OutreachSerializer(data=addData)
@@ -366,6 +367,19 @@ class RiceBlastLabList(APIView):
         lab.save()
 
         return Response(status=status.HTTP_200_OK)
+
+
+@api_view(['PUT'])
+def delete_labs(request):
+    print(request.data)
+    data = request.data
+
+    for one in data:
+        row = RiceBlastLab.objects.get(pk=one.get('pk'))
+        row.delete()
+    return Response(status=status.HTTP_200_OK)
+
+
 ###############################################333333333######
 ##################################################################3
 #################################################################
@@ -433,7 +447,15 @@ class CollectionSiteList(APIView):
         site.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+@api_view(['PUT'])
+def delete_sites(request):
+    print(request.data)
+    data = request.data
 
+    for one in data:
+        row = FungalCollectionSite.objects.get(pk=one.get('pk'))
+        row.delete()
+    return Response(status=status.HTTP_200_OK)
 class IsolateList(APIView):
     def get(self,request,format=None):
         isolates = Isolate.objects.all().order_by('pk')
@@ -469,6 +491,7 @@ class IsolateList(APIView):
 
     def put(self,request,format=None):
         print(request.data)
+        person = None
         isolate = Isolate.objects.get(pk=request.data.get('pk'))
         if isolate.isolate_id is not request.data.get('isolate_id'):
             isolate.isolate_id = request.data.get('isolate_id')
@@ -488,9 +511,16 @@ class IsolateList(APIView):
             isolate.host_genotype = request.data.get('host_genotype')
         if isolate.collection_site is not request.data.get('collection_site'):
             isolate.collection_site = request.data.get('collection_site')                                                                
-        if isolate.person is not request.data.get('person') and isinstance(request.data.get('person'),int):
+
+        if( isinstance(request.data.get('person'),str)) and request.data.get('person') != 'Unknown':
+            person = People.objects.filter(full_name=request.data.get('person')).first()
+        elif(isinstance(request.data.get('person'),int)):
             person = People.objects.get(pk=request.data.get('person'))
-            isolate.person = person                        
+
+
+        if person != None:
+            isolate.person = person
+
         isolate.save()    
         return Response(status=status.HTTP_200_OK)
 
@@ -500,6 +530,18 @@ class IsolateList(APIView):
         print(isolate)
         isolate.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(['PUT'])
+def delete_isolates(request):
+    print(request.data)
+    data = request.data
+
+    for one in data:
+        row = Isolate.objects.get(pk=one.get('pk'))
+        row.delete()
+    return Response(status=status.HTTP_200_OK)
+
 
 @api_view(['POST'])
 def upload_isolates(request):
@@ -513,7 +555,7 @@ def upload_isolates(request):
     if not result.has_errors():
         resource.import_data(dataset, dry_run=False)  # Actually import now    
         return Response(status=status.HTTP_200_OK)
-    return Response(status=status.HTTP_400)
+    return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class RiceGenotypeList(APIView):
@@ -582,6 +624,16 @@ class RiceGenotypeList(APIView):
         rice_genotype = RiceGenotype.objects.get(pk=pk)
         rice_genotype.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+@api_view(['PUT'])
+def delete_genotypes(request):
+    print(request.data)
+    data = request.data
+
+    for one in data:
+        row = RiceGenotype.objects.get(pk=one.get('pk'))
+        row.delete()
+    return Response(status=status.HTTP_200_OK)
 
 
 class RiceGenesList(APIView):
@@ -657,6 +709,17 @@ def upload_rice_genes(request):
         return Response(status=status.HTTP_200_OK)
     return Response(status=status.HTTP_400)
 
+@api_view(['PUT'])
+def delete_rice_genes(request):
+    print(request.data)
+    data = request.data
+
+    for one in data:
+        row = RiceGene.objects.get(pk=one.get('pk'))
+        row.delete()
+    return Response(status=status.HTTP_200_OK)
+
+
 class RGSResultsList(APIView):
     '''
     All Rice Gene Screen Results.
@@ -697,16 +760,17 @@ class RGSResultsList(APIView):
     def put(self,request,format=None):
         print(request.data)
         rgs = RiceGeneScreenResult.objects.get(pk=request.data.get('pk'))
-
-        if( isinstance(request.data.get('rice_genotype'),str)):
+        rice_genotype=None
+        rice_gene=None
+        if( isinstance(request.data.get('rice_genotype'),str)) and request.data.get('rice_genotype') != 'Unknown':
             rice_genotype = RiceGenotype.objects.get(name=request.data.get('rice_genotype'))
-        else:
+        elif(isinstance(request.data.get('rice_genotype'),int)):
             rice_genotype = RiceGenotype.objects.get(pk=request.data.get('rice_genotype'))
         
 
-        if( isinstance(request.data.get('rice_gene'),str) ):
+        if( isinstance(request.data.get('rice_gene'),str) ) and request.data.get('rice_gene') != 'Unknown':
             rice_gene = RiceGene.objects.get(name=request.data.get('rice_gene'))
-        else:
+        elif(isinstance(request.data.get('rice_gene'),int)):
             rice_gene = RiceGene.objects.get(pk=request.data.get('rice_gene'))           
 
         
@@ -717,10 +781,14 @@ class RGSResultsList(APIView):
             rgs.replicate_id = request.data.get('replicate_id')
         if rgs.sample_id is not request.data.get('sample_id'):
             rgs.sample_id = request.data.get('sample_id')
-        if rgs.rice_genotype.pk is not request.data.get('rice_genotype'): ##CHANGE
+
+
+        if rice_genotype != None:
             rgs.rice_genotype = rice_genotype
-        if rgs.rice_gene.pk is not request.data.get('rice_gene'): ##CHANGE
+        if rice_genotype != None: ##CHANGE
             rgs.rice_gene = rice_gene
+
+
         rgs.save()    
         return Response(status=status.HTTP_200_OK)
 
@@ -743,6 +811,17 @@ def upload_rgs_results(request):
         return Response({'message':'SUCCESS'},status=status.HTTP_200_OK)
     print(result.row_errors)
     return Response({'message':'FAILURE: CHECK FILE'},status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT'])
+def delete_rgs_results(request):
+    print(request.data)
+    data = request.data
+
+    for one in data:
+        row = RiceGeneScreenResult.objects.get(pk=one.get('pk'))
+        row.delete()
+    return Response(status=status.HTTP_200_OK)
+
 
 class FGSResultsList(APIView):
     '''
@@ -783,9 +862,9 @@ class FGSResultsList(APIView):
         print(request.data)
         fgs = FungalGeneScreenResult.objects.get(pk=request.data.get('pk'))
 
-        if( isinstance(request.data.get('rice_genotype'),str)):
-            rice_genotype = RiceGenotype.objects.get(name=request.data.get('rice_genotype'))
-        else:
+        if( isinstance(request.data.get('rice_genotype'),str)) and request.data.get('rice_genotype') != 'Unknown':
+            rice_genotype = RiceGenotype.objects.filter(name=request.data.get('rice_genotype')).first()
+        elif(isinstance(request.data.get('rice_genotype'),int)):
             rice_genotype = RiceGenotype.objects.get(pk=request.data.get('rice_genotype'))
 
         if fgs.pcr_results is not request.data.get('pcr_results'):
@@ -796,8 +875,10 @@ class FGSResultsList(APIView):
             fgs.sample_id = request.data.get('sample_id')
         if fgs.fungal_gene is not request.data.get('fungal_gene'):
             fgs.fungal_gene = request.data.get('fungal_gene')
-        if fgs.rice_genotype.pk is not request.data.get('rice_genotype'): 
-            fgs.rice_genotype = rice_genotype
+ 
+
+        if rice_genotype != None:
+            fgs.rice_genotype = rice_genotype 
 
         fgs.save()    
         return Response(status=status.HTTP_200_OK)
@@ -807,6 +888,16 @@ class FGSResultsList(APIView):
         fgs.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+
+@api_view(['PUT'])
+def delete_fgs_results(request):
+    print(request.data)
+    data = request.data
+
+    for one in data:
+        row = FungalGeneScreenResult.objects.get(pk=one.get('pk'))
+        row.delete()
+    return Response(status=status.HTTP_200_OK)
 class PathotypingResultsList(APIView):
     '''
     All Pathotyping Results.
@@ -837,7 +928,6 @@ class PathotypingResultsList(APIView):
         isolate = None
         person = None
         lab = None
-        project = None        
  
         if request.data.get('rice_genotype') is not None:
             rice_genotype = RiceGenotype.objects.get(pk=request.data.get('rice_genotype'))   
@@ -847,8 +937,7 @@ class PathotypingResultsList(APIView):
             person = People.objects.get(pk=request.data.get('person'))  
         if request.data.get('lab') is not None:
             lab = RiceBlastLab.objects.get(pk=request.data.get('lab'))  
-        if request.data.get('project') is not None:
-            project = Project.objects.get(pk=request.data.get('project'))  
+
  
  
         if serializer.is_valid():
@@ -856,7 +945,6 @@ class PathotypingResultsList(APIView):
             data.isolate = isolate 
             data.person = person 
             data.lab = lab 
-            data.project = project 
             data.rice_genotype = rice_genotype
             data.save()
             return Response(status=status.HTTP_204_NO_CONTENT)  
@@ -870,24 +958,32 @@ class PathotypingResultsList(APIView):
         isolate = None
         person = None
         lab = None
-        if( isinstance(request.data.get('rice_genotype'),int)):
+        if( isinstance(request.data.get('rice_genotype'),str)) and request.data.get('rice_genotype') != 'Unknown':
+            rice_genotype = RiceGenotype.objects.filter(name=request.data.get('rice_genotype')).first()
+        elif(isinstance(request.data.get('rice_genotype'),int)):
             rice_genotype = RiceGenotype.objects.get(pk=request.data.get('rice_genotype'))
-            print(rice_genotype)
- 
-        if( isinstance(request.data.get('isolate'),int)):
+
+        if( isinstance(request.data.get('isolate'),str)) and request.data.get('isolate') != 'Unknown':
+            isolate = Isolate.objects.filter(isolate_id=request.data.get('isolate')).first()
+        elif(isinstance(request.data.get('isolate'),int)):
             isolate = Isolate.objects.get(pk=request.data.get('isolate'))
-            print(isolate)
- 
- 
-        if( isinstance(request.data.get('person'),int)):
+
+
+        if( isinstance(request.data.get('person'),str)) and request.data.get('person') != 'Unknown':
+            person = People.objects.filter(full_name=request.data.get('person')).first()
+        elif(isinstance(request.data.get('person'),int)):
             person = People.objects.get(pk=request.data.get('person'))
-            print(person)
  
- 
-        if( isinstance(request.data.get('lab'),int)):
-            lab = RiceBlastLab.objects.get(pk=request.data.get('lab'))           
-            print(lab)
- 
+
+        if( isinstance(request.data.get('lab'),str)) and request.data.get('lab') != 'Unknown':
+            lab = RiceBlastLab.objects.filter(lab_name=request.data.get('lab')).first()
+        elif(isinstance(request.data.get('lab'),int)):
+            lab = RiceBlastLab.objects.get(pk=request.data.get('lab'))
+
+
+
+
+
  
  
  
@@ -910,16 +1006,17 @@ class PathotypingResultsList(APIView):
         if data.tray is not request.data.get('tray'):
             data.tray = request.data.get('tray')              
  
- 
 
-        if data.isolate is not request.data.get('isolate') : 
-            data.isolate = isolate
-        if data.rice_genotype is not request.data.get('rice_genotype'): 
-            data.rice_genotype = rice_genotype
-        if data.person is not request.data.get('person'): 
-            data.person = person
-        if data.lab is not request.data.get('lab'): 
+        if rice_genotype != None:
+            data.rice_genotype = rice_genotype 
+        if isolate != None:
+            data.isolate = isolate 
+        if person != None:
+            data.person = person 
+        if lab != None:
             data.lab = lab
+
+
         data.save()    
         return Response(status=status.HTTP_200_OK)
  
@@ -944,6 +1041,21 @@ def upload_pathotypinh_results(request):
         return Response({'message':'SUCCESS'},status=status.HTTP_200_OK)
     print(result.row_errors)
     return Response({'message':'FAILURE: CHECK FILE'},status=status.HTTP_400_BAD_REQUEST)
+
+
+
+@api_view(['PUT'])
+def delete_pathotyping_results(request):
+    print(request.data)
+    data = request.data
+
+    for one in data:
+        row = PathotypingResults.objects.get(pk=one.get('pk'))
+        row.delete()
+    return Response(status=status.HTTP_200_OK)
+
+
+
 
 class VcgGroupList(APIView):
     '''
@@ -986,24 +1098,23 @@ class VcgGroupList(APIView):
         data = VcgGroup.objects.get(pk=request.data.get('pk'))
         person = None
         lab = None
-        if( isinstance(request.data.get('person'),int)):
+
+        if( isinstance(request.data.get('person'),str)) and request.data.get('person') != 'Unknown':
+            person = People.objects.filter(full_name=request.data.get('person')).first()
+        elif(isinstance(request.data.get('person'),int)):
             person = People.objects.get(pk=request.data.get('person'))
-            print(person)
+ 
+
+        if( isinstance(request.data.get('lab'),str)) and request.data.get('lab') != 'Unknown':
+            lab = RiceBlastLab.objects.filter(lab_name=request.data.get('lab')).first()
+        elif(isinstance(request.data.get('lab'),int)):
+            lab = RiceBlastLab.objects.get(pk=request.data.get('lab'))
 
 
-        if( isinstance(request.data.get('lab'),int)):
-            lab = RiceBlastLab.objects.get(pk=request.data.get('lab'))           
-            print(lab)
-
-
-        if( isinstance(request.data.get('person'),int)):
-            person = People.objects.get(pk=request.data.get('person'))
-            print(person)
-
-
-        if( isinstance(request.data.get('lab'),int)):
-            lab = RiceBlastLab.objects.get(pk=request.data.get('lab'))           
-            print(lab)
+        if person != None:
+            data.person = person 
+        if lab != None:
+            data.lab = lab
 
 
 
@@ -1013,10 +1124,6 @@ class VcgGroupList(APIView):
         if data.vcg_id is not request.data.get('vcg_id'):
             data.vcg_id = request.data.get('vcg_id')
 
-        if data.person is not request.data.get('person'): 
-            data.person = person
-        if data.lab is not request.data.get('lab'): 
-            data.lab = lab
         data.save()    
         return Response(status=status.HTTP_200_OK)
 
@@ -1025,6 +1132,16 @@ class VcgGroupList(APIView):
         data.delete()        
         return Response(status=status.HTTP_204_NO_CONTENT)     
 
+
+@api_view(['PUT'])
+def delete_vcg_groups(request):
+    print(request.data)
+    data = request.data
+
+    for one in data:
+        row = VcgGroup.objects.get(pk=one.get('pk'))
+        row.delete()
+    return Response(status=status.HTTP_200_OK)
 
 class RiceSmallList(APIView):
     '''
@@ -1078,20 +1195,89 @@ class RiceSmallList(APIView):
             data.save()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
-        print(serializer.errors)
- 
-        return Response(status=status.HTTP_400_BAD_REQUEST) 
-        print(file_upload)        
+        print(serializer.errors)      
         return Response(status=status.HTTP_400_BAD_REQUEST)  
+
     def put(self,request,pk,format=None):    
-        print(request.data)   
-        return Response(status=status.HTTP_204_NO_CONTENT)                   
+        request_data = request.data.get('info')
+        info = json.loads(request_data)
+        print(info)
+        file_upload = request.FILES.get('sequence_data')
+        print(file_upload)
+
+        data = RiceSmallDnaFragmentsSequence.objects.get(pk=info['pk'])
+        rice_genotype = None
+        person = None
+        lab = None
+
+        if( isinstance(info['rice_genotype'],str)) and info['rice_genotype'] != 'Unknown':
+            rice_genotype = RiceGenotype.objects.filter(name=info['rice_genotype']).first()
+        elif(isinstance(info['rice_genotype'],int)):
+            rice_genotype = RiceGenotype.objects.get(pk=info['rice_genotype'])
+
+
+        if( isinstance(info['person'],str)) and info['person'] != 'Unknown':
+            person = People.objects.filter(full_name=info['person']).first()
+        elif(isinstance(info['person'],int)):
+            person = People.objects.get(pk=info['person'])
+ 
+
+        if( isinstance(info['lab'],str)) and info['lab'] != 'Unknown':
+            lab = RiceBlastLab.objects.filter(lab_name=info['lab']).first()
+        elif(isinstance(info['lab'],int)):
+            lab = RiceBlastLab.objects.get(pk=info['lab'])
+
+
+
+
+
+ 
+ 
+ 
+        if data.taxa_name is not info['taxa_name']:
+            data.taxa_name = info['taxa_name']
+        if data.sequence_id is not info['sequence_id']:
+            data.sequence_id = info['sequence_id']
+        if data.description is not info['description']:
+            data.description = info['description']
+        if file_upload != None:
+            data.sequence_data = file_upload
+        if data.chromosome_id is not info['chromosome_id']:
+            data.chromosome_id = info['chromosome_id']
+        if data.chromosome_site_id is not info['chromosome_site_id']:
+            data.chromosome_site_id = info['chromosome_site_id']
+        if data.loci_id is not info['loci_id']:
+            data.loci_id = info['loci_id']                        
+        if data.target_gene is not info['target_gene']:
+            data.target_gene = info['target_gene']                 
+ 
+
+        if rice_genotype != None:
+            data.rice_genotype = rice_genotype 
+
+        if person != None:
+            data.person = person 
+        if lab != None:
+            data.lab = lab
+
+
+        data.save()    
+        return Response(status=status.HTTP_200_OK)                 
     def delete(self,request,pk,format=None):
         data = RiceSmallDnaFragmentsSequence.objects.get(pk=pk)
         data.delete()        
         return Response(status=status.HTTP_204_NO_CONTENT)   
 
 
+@api_view(['PUT'])
+def delete_rice_small(request):
+    print(request.data)
+    data = request.data
+
+    for one in data:
+        row = RiceSmallDnaFragmentsSequence.objects.get(pk=one.get('pk'))
+        row.delete()
+    return Response(status=status.HTTP_200_OK)
 
 
 class FungalSmallList(APIView):
@@ -1140,12 +1326,61 @@ class FungalSmallList(APIView):
  
         return Response(status=status.HTTP_400_BAD_REQUEST)  
     def put(self,request,pk,format=None):    
-        return Response(status=status.HTTP_204_NO_CONTENT)                   
+        request_data = request.data.get('info')
+        info = json.loads(request_data)
+        file_upload = request.FILES.get('fungal_gene_sequence')
+        data = FungalSmallDnaFragmentsSequence.objects.get(pk=info['pk'])
+        person = None
+
+
+        if( isinstance(request.data.get('person'),str)) and request.data.get('person') != 'Unknown':
+            person = People.objects.filter(full_name=request.data.get('person')).first()
+        elif(isinstance(request.data.get('person'),int)):
+            person = People.objects.get(pk=request.data.get('person'))
+ 
+ 
+        if data.activity_name is not info['activity_name']:
+            data.activity_name = info['activity_name']
+        if data.fungal is not info['fungal']:
+            data.fungal = info['fungal']
+        if file_upload != None:
+            data.fungal_gene_sequence = file_upload
+        if data.date_of_sequence is not info['date_of_sequence']:
+            data.date_of_sequence = info['date_of_sequence']
+        if data.project_name is not info['project_name']:
+            data.project_name = info['project_name']
+        if data.loci_id is not info['loci_id']:
+            data.loci_id = info['loci_id']
+        if data.target_gene is not info['target_gene']:
+            data.target_gene = info['target_gene']
+        if data.fungal_gene_name is not info['fungal_gene_name']:
+            data.fungal_gene_name = info['fungal_gene_name']
+                   
+                
+ 
+
+
+        if person != None:
+            data.person = person 
+
+
+
+        data.save()    
+        return Response(status=status.HTTP_200_OK)                    
     def delete(self,request,pk,format=None):
         data = FungalSmallDnaFragmentsSequence.objects.get(pk=pk)
         data.delete()        
         return Response(status=status.HTTP_204_NO_CONTENT)   
 
+@api_view(['PUT'])
+def delete_fungal_small(request):
+    print(request.data)
+    data = request.data
+
+    for one in data:
+        row = FungalSmallDnaFragmentsSequence.objects.get(pk=one.get('pk'))
+        row.delete()
+    return Response(status=status.HTTP_200_OK)
 
 class VCGTestResultsList(APIView):
     '''
@@ -1198,18 +1433,22 @@ class VCGTestResultsList(APIView):
         isolate = None
         vcg = None
         lab = None
-        if( isinstance(request.data.get('vcg'),int)):
-            vcg = VcgGroup.objects.get(pk=request.data.get('vcg'))
-            print(vcg)
-
-        if( isinstance(request.data.get('isolate'),int)):
+        if( isinstance(request.data.get('isolate'),str)) and request.data.get('isolate') != 'Unknown':
+            isolate = Isolate.objects.filter(isolate_id=request.data.get('isolate')).first()
+        elif(isinstance(request.data.get('isolate'),int)):
             isolate = Isolate.objects.get(pk=request.data.get('isolate'))
-            print(isolate)
 
 
-        if( isinstance(request.data.get('lab'),int)):
-            lab = RiceBlastLab.objects.get(pk=request.data.get('lab'))           
-            print(lab)
+        if( isinstance(request.data.get('vcg'),str)) and request.data.get('vcg') != 'Unknown':
+            vcg = VcgGroup.objects.filter(vcg_id=request.data.get('vcg')).first()
+        elif(isinstance(request.data.get('vcg'),int)):
+            vcg = VcgGroup.objects.get(pk=request.data.get('vcg'))
+ 
+
+        if( isinstance(request.data.get('lab'),str)) and request.data.get('lab') != 'Unknown':
+            lab = RiceBlastLab.objects.filter(lab_name=request.data.get('lab')).first()
+        elif(isinstance(request.data.get('lab'),int)):
+            lab = RiceBlastLab.objects.get(pk=request.data.get('lab'))
 
 
 
@@ -1225,12 +1464,13 @@ class VCGTestResultsList(APIView):
         if data.vcg_replicate_id is not request.data.get('vcg_replicate_id'):
             data.vcg_replicate_id = request.data.get('vcg_replicate_id')        
 
-        if data.isolate is not request.data.get('isolate'): 
-            data.isolate = isolate
-        if data.vcg is not request.data.get('vcg'): 
-            data.vcg = vcg
-        if data.lab is not request.data.get('lab'): 
-            data.lab = lab     
+
+        if isolate != None:
+            data.isolate = isolate 
+        if vcg != None:
+            data.vcg = vcg 
+        if lab != None:
+            data.lab = lab    
         data.save()    
         return Response(status=status.HTTP_200_OK)
         
@@ -1252,6 +1492,16 @@ def upload_vcg_test_results(request):
         resource.import_data(dataset, dry_run=False)  # Actually import now    
         return Response(status=status.HTTP_200_OK)
     return Response(status=status.HTTP_400)
+
+@api_view(['PUT'])
+def delete_vcg_results(request):
+    print(request.data)
+    data = request.data
+
+    for one in data:
+        row = VCGTestResults.objects.get(pk=one.get('pk'))
+        row.delete()
+    return Response(status=status.HTTP_200_OK)
 
 
 class ProtocolList(APIView):
@@ -1286,12 +1536,34 @@ class ProtocolList(APIView):
         print(serializer.errors)
  
         return Response(status=status.HTTP_400_BAD_REQUEST)  
-    def put(self,request,pk,format=None):    
-        return Response(status=status.HTTP_204_NO_CONTENT)                   
+    def put(self,request,pk,format=None):
+        request_data = request.data.get('info')
+        info = json.loads(request_data)
+        file_upload = request.FILES.get('protocol')
+
+        data = Protocol.objects.get(pk=info['pk'])
+        if data.name is not info['name']:
+            data.name = info['name']
+        if file_upload != None:
+            data.protocol = file_upload
+        data.save()    
+        return Response(status=status.HTTP_200_OK)      
+
+
     def delete(self,request,pk,format=None):
         data = Protocol.objects.get(pk=pk)
         data.delete()        
         return Response(status=status.HTTP_204_NO_CONTENT) 
+
+@api_view(['PUT'])
+def delete_protocols(request):
+    print(request.data)
+    data = request.data
+
+    for one in data:
+        row = Protocol.objects.get(pk=one.get('pk'))
+        row.delete()
+    return Response(status=status.HTTP_200_OK)
 
 class RiceGBSList(APIView):
     '''
@@ -1333,12 +1605,55 @@ class RiceGBSList(APIView):
         print(serializer.errors)
  
         return Response(status=status.HTTP_400_BAD_REQUEST)     
-    def put(self,request,pk,format=None):    
-        return Response(status=status.HTTP_204_NO_CONTENT)                   
+    def put(self,request,pk,format=None):
+        request_data = request.data.get('info')
+        info = json.loads(request_data)
+        file_upload = request.FILES.get('gbs_dataset')
+
+        data = RiceGBS.objects.get(pk=info['pk'])
+
+        if data.rice_gbs_name is not info['rice_gbs_name']:
+            data.rice_gbs_name = info['rice_gbs_name']
+        if file_upload != None:
+            data.gbs_dataset = file_upload
+
+        if( isinstance(info['person'],str)) and info['person'] != 'Unknown':
+            person = People.objects.filter(full_name=info['person']).first()
+        elif(isinstance(info['person'],int)):
+            person = People.objects.get(pk=info['person'])
+ 
+
+        if( isinstance(info['lab'],str)) and info['lab'] != 'Unknown':
+            lab = RiceBlastLab.objects.filter(lab_name=info['lab']).first()
+        elif(isinstance(info['lab'],int)):
+            lab = RiceBlastLab.objects.get(pk=info['lab'])
+
+        if person != None:
+            data.person = person 
+        if lab != None:
+            data.lab = lab
+
+
+        data.save()    
+        return Response(status=status.HTTP_200_OK)
+
+
     def delete(self,request,pk,format=None):
         data = RiceGBS.objects.get(pk=pk)
         data.delete()        
         return Response(status=status.HTTP_204_NO_CONTENT) 
+
+
+@api_view(['PUT'])
+def delete_rice_gbs(request):
+    print(request.data)
+    data = request.data
+
+    for one in data:
+        row = RiceGBS.objects.get(pk=one.get('pk'))
+        row.delete()
+    return Response(status=status.HTTP_200_OK)
+
 
 class FungalGBSList(APIView):
     '''
@@ -1380,11 +1695,55 @@ class FungalGBSList(APIView):
  
         return Response(status=status.HTTP_400_BAD_REQUEST) 
     def put(self,request,pk,format=None):    
-        return Response(status=status.HTTP_204_NO_CONTENT)                   
+        request_data = request.data.get('info')
+        info = json.loads(request_data)
+        file_upload = request.FILES.get('gbs_dataset')
+
+        data = FungalGBS.objects.get(pk=info['pk'])
+
+        if data.fungal_gbs_name is not info['fungal_gbs_name']:
+            data.fungal_gbs_name = info['fungal_gbs_name']
+        if file_upload != None:
+            data.gbs_dataset = file_upload
+
+        if( isinstance(info['person'],str)) and info['person'] != 'Unknown':
+            person = People.objects.filter(full_name=info['person']).first()
+        elif(isinstance(info['person'],int)):
+            person = People.objects.get(pk=info['person'])
+ 
+
+        if( isinstance(info['lab'],str)) and info['lab'] != 'Unknown':
+            lab = RiceBlastLab.objects.filter(lab_name=info['lab']).first()
+        elif(isinstance(info['lab'],int)):
+            lab = RiceBlastLab.objects.get(pk=info['lab'])
+
+        if person != None:
+            data.person = person 
+        if lab != None:
+            data.lab = lab
+            
+                        
+        data.save()    
+        return Response(status=status.HTTP_200_OK)    
     def delete(self,request,pk,format=None):
         data = FungalGBS.objects.get(pk=pk)
         data.delete()        
         return Response(status=status.HTTP_204_NO_CONTENT) 
+
+
+
+@api_view(['PUT'])
+def delete_fungal_gbs(request):
+    print(request.data)
+    data = request.data
+
+    for one in data:
+        row = FungalGBS.objects.get(pk=one.get('pk'))
+        row.delete()
+    return Response(status=status.HTTP_200_OK)
+
+
+
 
 
 

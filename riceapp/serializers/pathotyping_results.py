@@ -15,7 +15,7 @@ class PathotypingResultsSerializer(serializers.ModelSerializer):
 
     def get_isolate(self, results):
         if results.isolate is not None:
-            return results.isolate.isolate_name
+            return results.isolate.isolate_id
         return 'Unknown' 
 
     def get_person(self, results):
