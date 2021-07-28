@@ -1,6 +1,5 @@
-from rest_framework import serializers
+from rest_framework import serializers,pagination
 from ..models import PathotypingResults
-
 
 class PathotypingResultsSerializer(serializers.ModelSerializer):
     rice_genotype = serializers.SerializerMethodField()
@@ -31,15 +30,14 @@ class PathotypingResultsSerializer(serializers.ModelSerializer):
     class Meta:
         model = PathotypingResults
         fields = ['pk','replicate_id','sample_id','stock_id','date_inoculated','date_scored',
-                'date_planted','disease_score','tray','rice_genotype','isolate','person','lab']
+                'date_planted','disease_score','tray','test','rice_genotype','isolate','person','lab']
         
+class PathotypingResultsPaginator(pagination.PageNumberPagination):
+    """
+    Serializes page objects of pathotyping results.
+    """
+    page_size_query_param = 'page_size'
+    page_query_param = 'p'
+    serializer_class = PathotypingResultsSerializer
 
         
-
-
-
-
-     
-    
-
-

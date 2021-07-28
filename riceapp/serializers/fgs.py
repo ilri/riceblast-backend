@@ -3,12 +3,12 @@ from ..models import FungalGeneScreenResult
 
 
 class FGSSerializer(serializers.ModelSerializer):
-    rice_genotype = serializers.SerializerMethodField()
+    isolate = serializers.SerializerMethodField()
 
-    def get_rice_genotype(self, rgs):
-        if rgs.rice_genotype is not None:
-            return rgs.rice_genotype.name
+    def get_isolate(self, rgs):
+        if rgs.isolate is not None:
+            return rgs.isolate.isolate_id
         return 'Unknown'    
     class Meta:
         model = FungalGeneScreenResult
-        fields = ['pk','rice_genotype','fungal_gene','pcr_results','replicate_id','sample_id']
+        fields = ['pk','isolate','fungal_gene','pcr_results','replicate_id','sample_id']

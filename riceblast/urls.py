@@ -25,7 +25,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/token/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
-    path('api/login/', views.current_user),
+    path('api/current_user/', views.current_user),
     re_path(r'api/labs/(\d*)', views.RiceBlastLabList.as_view()),
     re_path(r'api/collection_sites/(\d*)',views.CollectionSiteList.as_view()),
     re_path(r'api/isolates/(\d*)',views.IsolateList.as_view()),
@@ -34,6 +34,7 @@ urlpatterns = [
     re_path(r'api/rgs/(\d*)', views.RGSResultsList.as_view()),
     re_path(r'api/fgs/(\d*)',views.FGSResultsList.as_view()),
     re_path(r'api/pathotyping_results/(\d*)',views.PathotypingResultsList.as_view() ),
+    re_path(r'api/list_pathotyping_results/',views.PathotypingResultsListView.as_view() ),
     re_path(r'api/vcg_groups/(\d*)',views.VcgGroupList.as_view()),
     re_path(r'api/fungal_small/(\d*)',views.FungalSmallList.as_view()),
     re_path(r'api/rice_small/(\d*)',views.RiceSmallList.as_view()),
@@ -48,8 +49,8 @@ urlpatterns = [
 
     
     re_path(r'api/register/',views.UserList.as_view()),
-    re_path(r'api/user_delete/',views.UserList.as_view()),
-    re_path(r'api/people/',views.all_people),
+    re_path(r'api/people/',views.UserList.as_view()),
+    # re_path(r'api/people/',views.all_people),
     re_path(r'api/user_activation/',views.activate_user),
 
     
@@ -70,7 +71,7 @@ urlpatterns = [
     re_path(r'api/delete_fungal_gbs/',views.delete_fungal_gbs),        
 
     path('api/download/',views.download_file),
-    # re_path(r'api/upload_pathotyping_results/',views.upload_pathotypinh_results),
+    re_path(r'api/upload_pathotyping_results/',views.upload_pathotypinh_results),
     re_path(r'api/upload_vcg_test_results/',views.upload_vcg_test_results),
     re_path(r'api/upload_rice_genes/',views.upload_rice_genes),
     re_path(r'api/upload_isolates/',views.upload_isolates),

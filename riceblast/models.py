@@ -79,16 +79,12 @@ class RiceBlastLab(models.Model):
         
 class People(models.Model):
     ''' Model class for Lab People '''
-    ROLE_CHOICES = [
-        ('ADMIN','ADMIN'),
-        ('USER','USER'),
-    ]
+
     user = models.OneToOneField(User,on_delete=models.CASCADE, primary_key=True)
     full_name = models.CharField(max_length=100)
     telephone_number = models.CharField(max_length=100)
     lab = models.ForeignKey(RiceBlastLab, on_delete=models.CASCADE, related_name='lab_people',null=True,blank=True)
     designation = models.CharField(max_length=100)
-    role = models.CharField(max_length=50,choices=ROLE_CHOICES,default='USER')
 
     class Meta:
         verbose_name_plural = 'People'
@@ -209,7 +205,7 @@ class PathotypingResults(models.Model):
     date_inoculated = models.CharField(max_length=100,null=True,blank=True)
     date_scored = models.CharField(max_length=100,null=True,blank=True)
     date_planted = models.CharField(max_length=100,null=True,blank=True)
-    disease_score = models.CharField(max_length=100,blank=True,null=True)
+    disease_score = models.IntegerField(blank=True,null=True)
     test = models.CharField(max_length=100,blank=True,null=True)
     tray = models.CharField(max_length=100,blank=True,null=True)
     rice_genotype = models.ForeignKey(RiceGenotype, on_delete=models.CASCADE,null=True,blank=True)
@@ -219,7 +215,8 @@ class PathotypingResults(models.Model):
 
     class Meta:
         verbose_name_plural = 'Pathotyping Results'
-
+    def __str__(self):
+        return self.sample_id
 
 class VcgGroup(models.Model):
     group = models.CharField(max_length=200,null=True,blank=True)

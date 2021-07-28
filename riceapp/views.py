@@ -21,7 +21,7 @@ from .serializers.rice_genotypes import RiceGenotypeSerializer
 from .serializers.rice_genes import RiceGenesSerializer
 from .serializers.rgs import RGSSerializer,RGSPostSerializer
 from .serializers.fgs import FGSSerializer
-from .serializers.pathotyping_results import PathotypingResultsSerializer
+from .serializers.pathotyping_results import PathotypingResultsSerializer,PathotypingResultsPaginator
 from .serializers.vcg_groups import VCGGroupSerializer
 from .serializers.rice_small import RiceSmallSerializer
 from .serializers.fungal_small import FungalSmallSerializer
@@ -42,8 +42,10 @@ from wsgiref.util import FileWrapper
 from .resources import *
 from tablib import Dataset
 
-
-
+from rest_framework.generics import ListAPIView
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 
 
 # Create your views here. 
@@ -81,6 +83,28 @@ class PublicationsList(APIView):
         print(serializer.errors)
  
         return Response({"message":serializer.errors},status=status.HTTP_400_BAD_REQUEST)
+    def put(self,request,format=None):
+        print(request.data)
+        request_data = request.data.get('info')
+        info = json.loads(request_data)
+        file_upload = request.FILES.get('publication')
+        print(file_upload)
+        data = Publications.objects.get(pk=info['pk'])
+
+        if data.title != info['title']:
+            data.title = info['title']
+
+        if data.date != info['date']:
+            data.date = info['date']
+
+        if data.description != info['description']:
+            data.description = info['description']
+
+        if data.publication != file_upload and file_upload != None:
+            data.publication = file_upload
+
+        data.save()
+        return Response({"message":'SUCCESSFUL'},status=status.HTTP_201_CREATED)
 
     def delete(self,request,pk,format=None):
         data = Publications.objects.get(pk=pk)
@@ -121,6 +145,29 @@ class NewslettersList(APIView):
  
         return Response({"message":serializer.errors},status=status.HTTP_400_BAD_REQUEST)
 
+    def put(self,request,format=None):
+        print(request.data)
+        request_data = request.data.get('info')
+        info = json.loads(request_data)
+        file_upload = request.FILES.get('newsletter')
+        print(file_upload)
+        data = Newsletters.objects.get(pk=info['pk'])
+
+        if data.title != info['title']:
+            data.title = info['title']
+
+        if data.date != info['date']:
+            data.date = info['date']
+
+        if data.description != info['description']:
+            data.description = info['description']
+
+        if data.newsletter != file_upload and file_upload != None:
+            data.newsletter = file_upload
+
+        data.save()
+        return Response({"message":'SUCCESSFUL'},status=status.HTTP_201_CREATED)
+
     def delete(self,request,pk,format=None):
         data = Newsletters.objects.get(pk=pk)
         data.delete()        
@@ -156,6 +203,25 @@ class MeetingsList(APIView):
         print(serializer.errors)
  
         return Response({"message":serializer.errors},status=status.HTTP_400_BAD_REQUEST)
+    def put(self,request,format=None):
+        print(request.data)
+        request_data = request.data.get('info')
+        info = json.loads(request_data)
+        file_upload = request.FILES.get('minutes')
+        print(file_upload)
+        data = Minutes.objects.get(pk=info['pk'])
+
+        if data.title != info['title']:
+            data.title = info['title']
+
+        if data.date != info['date']:
+            data.date = info['date']
+
+        if data.minutes != file_upload and file_upload != None:
+            data.minutes = file_upload
+
+        data.save()
+        return Response({"message":'SUCCESSFUL'},status=status.HTTP_201_CREATED)
 
     def delete(self,request,pk,format=None):
         data = Minutes.objects.get(pk=pk)
@@ -194,6 +260,32 @@ class OutreachList(APIView):
         print(serializer.errors)
  
         return Response({"message":serializer.errors},status=status.HTTP_400_BAD_REQUEST)
+    def put(self,request,format=None):
+        print(request.data)
+        request_data = request.data.get('info')
+        info = json.loads(request_data)
+        image_file_upload = request.FILES.get('image')
+        outreach_file_upload=request.FILES.get('outreach_file')
+
+        data = Outreach.objects.get(pk=info['pk'])
+
+        if data.outreach != info['outreach']:
+            data.outreach = info['outreach']
+
+        if data.brief != info['brief']:
+            data.brief = info['brief']
+
+        if data.date != info['date']:
+            data.date = info['date']
+
+        if data.image != image_file_upload and image_file_upload != None:
+            data.image = image_file_upload
+
+        if data.outreach_file != outreach_file_upload and outreach_file_upload != None:
+            data.outreach_file = outreach_file_upload
+
+        data.save()
+        return Response({"message":'SUCCESSFUL'},status=status.HTTP_201_CREATED)
 
     def delete(self,request,pk,format=None):
         data = Outreach.objects.get(pk=pk)
@@ -219,6 +311,14 @@ class CustomJWTSerializer(TokenObtainPairSerializer):
 
 class UserList(APIView):
     ''' API class based view for handling User Information'''
+    def get(self,request,format=None):
+        '''
+        Get all people in the system.
+        '''
+        people = People.objects.all()
+        serializer = PeopleUserSerializer(people, many=True)
+        return Response(serializer.data)
+
     def post(self, request,format=None):
         user_info = {
             'username':request.data.get('username'),
@@ -230,6 +330,7 @@ class UserList(APIView):
             'telephone_number':request.data.get('telephone_number'),
             'lab':request.data.get('lab'),
             'designation':request.data.get('designation'),
+            'role':request.data.get('role'),
         }
         
         user_serializer = UserSerializerWithToken(data=user_info)
@@ -253,6 +354,48 @@ class UserList(APIView):
                 return Response({"message":'One or more fields has the wrong data type.'}, status=status.HTTP_400_BAD_REQUEST)
             return Response({"message":'Email already Exists. Please use a different email.'},status=status.HTTP_406_NOT_ACCEPTABLE)
         return Response({"message":'Username already Exists. Please use a different username.'},status=status.HTTP_406_NOT_ACCEPTABLE)
+    
+    def put(self,request,format=None):
+        print(request.data)
+        person=People.objects.get(pk=request.data.get('pk'))
+        user=User.objects.get(pk=person.user.pk)
+        lab=None
+
+        user_request = request.data.get('user')
+        user_data = {
+            'username':user_request.get('username'),
+            'email':user_request.get('email'),
+        }
+        person_data = {
+            'full_name':request.data.get('full_name'),
+            'telephone_number':request.data.get('telephone_number'),
+            'lab':request.data.get('lab'),
+            'designation':request.data.get('designation'),
+            'role':request.data.get('role'),
+        }
+        if user.username != user_data['username'] and user_data['username'] != '':
+            print(user_data['username'])
+            user.username = user_data['username']
+        if user.email != user_data['email'] and user_data['email'] != '':
+            user.email = user_data['email']
+        if person.full_name != person_data['full_name'] and person_data['full_name'] != '':
+            person.full_name = person_data['full_name']
+        if person.telephone_number != person_data['telephone_number'] and person_data['telephone_number'] != '':
+            person.telephone_number = person_data['telephone_number']  
+        if person.designation != person_data['designation'] and person_data['designation'] != '':
+            person.designation = person_data['designation'] 
+        if person.role != person_data['role'] and person_data['role'] != '':
+            person.role = person_data['role']
+
+        if( isinstance(person_data['lab'],str)) and request.data.get('lab') != 'Unknown':
+            lab = RiceBlastLab.objects.filter(lab_name=request.data.get('lab')).first()
+        elif(isinstance(request.data.get('lab'),int)):
+            lab = RiceBlastLab.objects.get(pk=request.data.get('lab'))
+
+        user.lab=lab
+        user.save()
+        person.save()
+        return Response(status=status.HTTP_200_OK)
     
     def delete(self,request,username,format=None):
         print(username)
@@ -293,7 +436,7 @@ def current_user(request):
     Determine the current user by their token, and return their data.
     """
     people_data = People.objects.get(user=request.user.pk)
-    serializer = PeopleUser(people_data)
+    serializer = PeopleUserSerializer(people_data)
     return Response(serializer.data)        
 
 @api_view(['GET'])
@@ -844,14 +987,14 @@ class FGSResultsList(APIView):
         }
 
         serializer = FGSSerializer(data=new_fgs)
-        rice_genotype = None
+        isolate = None
 
-        if request.data.get('rice_genotype') is not None:
-            rice_genotype = RiceGenotype.objects.get(pk=request.data.get('rice_genotype'))   
+        if request.data.get('isolate') is not None:
+            isolate = Isolate.objects.get(pk=request.data.get('isolate'))   
 
         if serializer.is_valid():
             fgs = serializer.save()
-            fgs.rice_genotype = rice_genotype 
+            fgs.isolate = isolate 
             fgs.save()
             return Response(status=status.HTTP_204_NO_CONTENT)  
         print(serializer.errors)
@@ -861,11 +1004,11 @@ class FGSResultsList(APIView):
     def put(self,request,format=None):
         print(request.data)
         fgs = FungalGeneScreenResult.objects.get(pk=request.data.get('pk'))
-
-        if( isinstance(request.data.get('rice_genotype'),str)) and request.data.get('rice_genotype') != 'Unknown':
-            rice_genotype = RiceGenotype.objects.filter(name=request.data.get('rice_genotype')).first()
-        elif(isinstance(request.data.get('rice_genotype'),int)):
-            rice_genotype = RiceGenotype.objects.get(pk=request.data.get('rice_genotype'))
+        isolate=None
+        if( isinstance(request.data.get('isolate'),str)) and request.data.get('isolate') != 'Unknown':
+            isolate = Isolate.objects.filter(isolate_id=request.data.get('isolate')).first()
+        elif(isinstance(request.data.get('isolate'),int)):
+            isolate = Isolate.objects.get(pk=request.data.get('isolate'))
 
         if fgs.pcr_results is not request.data.get('pcr_results'):
             fgs.pcr_results = request.data.get('pcr_results')
@@ -877,8 +1020,8 @@ class FGSResultsList(APIView):
             fgs.fungal_gene = request.data.get('fungal_gene')
  
 
-        if rice_genotype != None:
-            fgs.rice_genotype = rice_genotype 
+        if isolate != None:
+            fgs.isolate = isolate 
 
         fgs.save()    
         return Response(status=status.HTTP_200_OK)
@@ -898,14 +1041,27 @@ def delete_fgs_results(request):
         row = FungalGeneScreenResult.objects.get(pk=one.get('pk'))
         row.delete()
     return Response(status=status.HTTP_200_OK)
+
+
+
+class PathotypingResultsListView(ListAPIView):
+    queryset = PathotypingResults.objects.all().order_by('pk')
+    serializer_class = PathotypingResultsSerializer
+    pagination_class = PageNumberPagination
+    # authentication_classes = (TokenAuthentication,)
+    # permission_classes = (IsAuthenticated,)
+
 class PathotypingResultsList(APIView):
     '''
     All Pathotyping Results.
     '''
     def get(self,request,format=None):
-        results = PathotypingResults.objects.all()
-        serializer = PathotypingResultsSerializer(results, many=True)
-        return Response(serializer.data)
+        results = PathotypingResults.objects.all().order_by('pk')
+        total_count = len(results)
+        paginator = PathotypingResultsPaginator()
+        result_page = paginator.paginate_queryset(results,request)        
+        serializer = PathotypingResultsSerializer(result_page, many=True,context={'request':request})
+        return Response({'data':serializer.data,'count':total_count},status=status.HTTP_200_OK)
 
     def post(self,request,format=None):
         print(request.data)
